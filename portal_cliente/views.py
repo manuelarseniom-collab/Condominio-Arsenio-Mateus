@@ -50,7 +50,7 @@ def minhas_faturas(request):
         return redirect("portal_cliente:home")
     from faturacao.models import Fatura
 
-    faturas = Fatura.objects.filter(reserva__cliente=cliente).select_related("reserva")
+    faturas = Fatura.objects.filter(cliente=request.user).select_related("reserva")
     return render(
         request,
         "portal_cliente/faturas.html",

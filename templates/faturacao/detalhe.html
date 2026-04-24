@@ -1,0 +1,58 @@
+{% extends "base_app.html" %}
+{% block title %}{{ fatura.numero_fatura }}{% endblock %}
+{% block content %}
+<h1>Fatura {{ fatura.numero_fatura }}</h1>
+<p><strong>Data:</strong> {{ fatura.data_emissao|date:"d/m/Y H:i" }}</p>
+<p><strong>Cliente:</strong> {% if fatura.reserva_id %}{{ fatura.reserva.cliente.nome }}{% else %}{{ fatura.cliente.username }}{% endif %}</p>
+<p><strong>Reserva:</strong> {% if fatura.reserva_id %}#{{ fatura.reserva_id }}{% else %}Sem reserva{% endif %}</p>
+<p><strong>Status:</strong> {{ fatura.get_status_display }}</p>
+
+<section class="card">
+    <table class="data-table">
+        <thead><tr><th>Descrição</th><th>Qtd</th><th>Preço Unit.</th><th>Subtotal</th></tr></thead>
+        <tbody>
+            {% for item in fatura.itens.all %}
+            <tr>
+                <td>{{ item.descricao }}</td>
+                <td>{{ item.quantidade }}</td>
+                <td>{{ item.preco_unitario }}</td>
+                <td>{{ item.total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p><strong>Total:</strong> {{ fatura.total }}</p>
+    <p><strong>Método pagamento:</strong> {{ fatura.metodo_pagamento|default:"-" }}</p>
+    <p><strong>Observação:</strong> Pagamento realizado antecipadamente conforme política do condomínio.</p>
+</section>
+
+<section class="card">
+    <form method="post" style="display:inline-block; margin-right: .5rem;">
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="registar_pagamento">
+        <select name="metodo_pagamento">
+            <option value="referencia_bancaria">Online (referência bancária)</option>
+            <option value="presencial_recepcao">Presencial (recepção)</option>
+        </select>
+        <button type="submit">Registar pagamento</button>
+    </form>
+    <form method="post" style="display:inline-block; margin-right: .5rem;">
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="enviar_email">
+        <button type="submit">Enviar por email</button>
+    </form>
+    <form method="post" style="display:inline-block; margin-right: .5rem;">
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="enviar_whatsapp">
+        <button type="submit">Enviar por WhatsApp</button>
+    </form>
+    <a href="{% url 'faturacao:imprimir' fatura.id %}" target="_blank">Imprimir fatura</a>
+    {% if perfil_atual == "administrador" %}
+    <form method="post" style="display:inline-block; margin-left:.5rem;">
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="cancelar">
+        <button type="submit">Cancelar fatura</button>
+    </form>
+    {% endif %}
+</section>
+{% endblock %}

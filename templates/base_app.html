@@ -30,7 +30,8 @@
                 <a href="{% url 'clientes:lista' %}">Clientes</a>
                 <a href="{% url 'reservas:lista' %}">Reservas ativas</a>
                 <a href="{% url 'reservas:lista' %}">Reservas pendentes</a>
-                <a href="{% url 'faturacao:lista' %}">Pagamentos</a>
+                <a href="{% url 'faturacao:lista' %}">Faturação</a>
+                <a href="{% url 'faturacao:emitir' %}">Emitir fatura</a>
                 <form method="post" action="{% url 'usuarios:logout' %}">
                     {% csrf_token %}
                     <button type="submit">Sair</button>
@@ -40,7 +41,8 @@
                 <a href="{% url 'reservas:lista' %}">Reservas</a>
                 <a href="{% url 'clientes:lista' %}">Clientes</a>
                 <a href="/admin/auth/user/">Trabalhadores</a>
-                <a href="{% url 'faturacao:lista' %}">Financeiro</a>
+                <a href="{% url 'faturacao:lista' %}">Faturação</a>
+                <a href="{% url 'faturacao:emitir' %}">Emitir fatura</a>
                 <a href="{% url 'relatorios:lista' %}">Relatórios</a>
                 <a href="/admin/">Configurações</a>
                 <form method="post" action="{% url 'usuarios:logout' %}">
@@ -61,6 +63,7 @@
                 <div class="topbar-actions">
                     {% if request.user.is_authenticated %}
                         <span>{{ request.user.username }}</span>
+                        <a href="javascript:history.back()" class="btn-link secondary">Página anterior</a>
                         <form method="post" action="{% url 'usuarios:logout' %}" style="display:inline;">
                             {% csrf_token %}
                             <button type="submit" class="btn-link secondary">Sair</button>

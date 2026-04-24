@@ -15,7 +15,9 @@ class ItemFaturaInline(admin.TabularInline):
 
 @admin.register(Fatura)
 class FaturaAdmin(admin.ModelAdmin):
-    list_display = ("id", "reserva", "data_emissao", "total", "status")
+    list_display = ("numero_fatura", "cliente", "reserva", "data_emissao", "total", "status", "metodo_pagamento")
+    list_filter = ("status", "metodo_pagamento", "enviado_email", "enviado_whatsapp", "data_emissao")
+    search_fields = ("numero_fatura", "reserva__id", "cliente__username", "cliente__email")
     inlines = [ItemFaturaInline]
 
 

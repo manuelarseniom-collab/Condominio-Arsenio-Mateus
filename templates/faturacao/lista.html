@@ -2,20 +2,37 @@
 {% block title %}Faturacao{% endblock %}
 {% block content %}
 <h1>Faturas</h1>
+<p>
+    <a class="btn-link" href="{% url 'faturacao:emitir' %}">Emitir fatura</a>
+</p>
+<section class="card" style="margin-bottom:1rem;">
+    <p><strong>Emitidas:</strong> {{ totais.emitida }} | <strong>Pagas:</strong> {{ totais.paga }} | <strong>Canceladas:</strong> {{ totais.cancelada }}</p>
+    <form method="get">
+        <label for="status">Estado:</label>
+        <select id="status" name="status">
+            <option value="">Todos</option>
+            <option value="emitida" {% if status == "emitida" %}selected{% endif %}>Emitida</option>
+            <option value="paga" {% if status == "paga" %}selected{% endif %}>Paga</option>
+            <option value="cancelada" {% if status == "cancelada" %}selected{% endif %}>Cancelada</option>
+        </select>
+        <button type="submit">Filtrar</button>
+    </form>
+</section>
 <section class="card">
     <table class="data-table">
-        <thead><tr><th>ID</th><th>Reserva</th><th>Cliente</th><th>Total</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Nº Fatura</th><th>Reserva</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Ações</th></tr></thead>
         <tbody>
         {% for f in faturas %}
             <tr>
-                <td>{{ f.id }}</td>
-                <td>#{{ f.reserva_id }}</td>
-                <td>{{ f.reserva.cliente.nome }}</td>
+                <td>{{ f.numero_fatura }}</td>
+                <td>{% if f.reserva_id %}#{{ f.reserva_id }}{% else %}-{% endif %}</td>
+                <td>{% if f.reserva_id %}{{ f.reserva.cliente.nome }}{% else %}{{ f.cliente.username }}{% endif %}</td>
                 <td>{{ f.total }}</td>
                 <td>{{ f.get_status_display }}</td>
+                <td><a href="{% url 'faturacao:detalhe' f.id %}">Abrir</a></td>
             </tr>
         {% empty %}
-            <tr><td colspan="5">Sem faturas.</td></tr>
+            <tr><td colspan="6">Sem faturas.</td></tr>
         {% endfor %}
         </tbody>
     </table>

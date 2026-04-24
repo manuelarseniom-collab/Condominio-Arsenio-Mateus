@@ -11,8 +11,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from clientes.models import Cliente
-from faturacao.models import Fatura
-from faturacao.services import criar_fatura_base_para_reserva, recalcular_total_fatura
+from faturacao.services import (
+    criar_fatura_base_para_reserva,
+    obter_fatura_principal_reserva,
+    recalcular_total_fatura,
+)
 from reservas.disponibilidade import apartamentos_disponiveis, unidade_disponivel_no_periodo
 from reservas.forms_public import BuscaDisponibilidadeForm, IniciarPreReservaForm
 from reservas.models import Reserva
@@ -204,7 +207,9 @@ def iniciar_pre_reserva(request, apartment_id: int):
                             reserva.save(update_fields=["pagamento_entidade", "pagamento_referencia"])
 
                         criar_fatura_base_para_reserva(reserva)
-                        fatura = Fatura.objects.get(reserva=reserva)
+                        fatura = obter_fatura_principal_reserva(reserva)
+                        if not fatura:
+                            raise ValueError("Não foi possível criar a fatura da reserva.")
                         recalcular_total_fatura(fatura)
                         pagamento, _ = fatura.pagamentos.get_or_create(
                             status="pendente",

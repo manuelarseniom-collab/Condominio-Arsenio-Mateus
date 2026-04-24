@@ -41,6 +41,7 @@ body.public-body {
     display: flex;
     gap: 1.25rem;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .pub-nav a {
@@ -124,6 +125,25 @@ body.public-body {
     text-decoration: none;
     font-weight: 700;
     background: #fff;
+}
+
+.pub-nav form {
+    margin: 0;
+    display: inline-flex;
+}
+
+.pub-nav .btn-pub-outline {
+    padding: 0.35rem 0.7rem;
+    border-width: 1px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.2;
+}
+
+.pub-nav .btn-pub-outline:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
 }
 
 .pub-main {

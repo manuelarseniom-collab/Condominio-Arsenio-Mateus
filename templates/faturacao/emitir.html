@@ -1,0 +1,18 @@
+{% extends "base_app.html" %}
+{% block title %}Emitir fatura{% endblock %}
+{% block content %}
+<h1>Emitir fatura</h1>
+<section class="card">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <h3>Itens manuais (serviços)</h3>
+        {% for item_form in item_forms %}
+            <fieldset style="margin-bottom: 1rem; border: 1px solid #ddd; padding: .75rem;">
+                {{ item_form.as_p }}
+            </fieldset>
+        {% endfor %}
+        <button type="submit" class="btn-link">Emitir fatura</button>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base_app.html" %}
+{% block title %}Enviar WhatsApp{% endblock %}
+{% block content %}
+<h1>Enviar fatura por WhatsApp</h1>
+<p><strong>Fatura:</strong> {{ fatura.numero_fatura }}</p>
+<p><strong>Mensagem:</strong> {{ mensagem }}</p>
+{% if whatsapp_link %}
+<p><a class="btn-link" href="{{ whatsapp_link }}" target="_blank">Abrir WhatsApp com mensagem</a></p>
+{% else %}
+<p>WhatsApp da recepção não configurado em settings.</p>
+{% endif %}
+{% endblock %}

@@ -13,13 +13,15 @@ _REGISTERED = False
 
 def _sync_restaurante_pedido(pedido):
     from faturacao.models import ItemFatura
-    from faturacao.services import add_item_fatura, recalcular_total_fatura
+    from faturacao.services import add_item_fatura, obter_fatura_principal_reserva, recalcular_total_fatura
     from restaurante.models import PedidoRestaurante
 
     pedido = PedidoRestaurante.objects.get(pk=pedido.pk)
     pedido.recalcular_total()
 
-    fatura = pedido.reserva.fatura
+    fatura = obter_fatura_principal_reserva(pedido.reserva)
+    if not fatura:
+        return
     ref = f"Restaurante pedido #{pedido.pk}"
     ItemFatura.objects.filter(fatura=fatura, descricao=ref).delete()
     recalcular_total_fatura(fatura)
@@ -38,7 +40,7 @@ def register_invoice_signals():
     from reservas.models import Reserva
     from restaurante.models import ItemPedidoRestaurante
 
-    from faturacao.services import add_item_fatura, criar_fatura_base_para_reserva
+    from faturacao.services import add_item_fatura, criar_fatura_base_para_reserva, obter_fatura_principal_reserva
 
     @receiver(post_save, sender=Reserva, dispatch_uid="fam_reserva_fatura")
     def reserva_criada(sender, instance, created, **kwargs):
@@ -49,7 +51,9 @@ def register_invoice_signals():
     def limpeza_criada(sender, instance, created, **kwargs):
         if not created:
             return
-        fatura = instance.reserva.fatura
+        fatura = obter_fatura_principal_reserva(instance.reserva)
+        if not fatura:
+            return
         desc = f"Limpeza ({instance.get_tipo_display()}) #{instance.pk}"
         add_item_fatura(fatura, desc, 1, instance.preco)
 
@@ -57,7 +61,9 @@ def register_invoice_signals():
     def lavandaria_criada(sender, instance, created, **kwargs):
         if not created:
             return
-        fatura = instance.reserva.fatura
+        fatura = obter_fatura_principal_reserva(instance.reserva)
+        if not fatura:
+            return
         desc = f"Lavandaria ({instance.get_tipo_display()}) #{instance.pk}"
         add_item_fatura(fatura, desc, 1, instance.preco_total)
 

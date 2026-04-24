@@ -21,13 +21,11 @@ def add_item_fatura(fatura, descricao: str, quantidade, preco_unitario: Decimal)
 
     q = Decimal(str(quantidade))
     pu = Decimal(str(preco_unitario))
-    tot = (q * pu).quantize(Decimal("0.01"))
     ItemFatura.objects.create(
         fatura=fatura,
         descricao=descricao,
-        quantidade=q,
+        quantidade=int(q),
         preco_unitario=pu,
-        total=tot,
     )
 
 
@@ -36,10 +34,14 @@ def criar_fatura_base_para_reserva(reserva) -> None:
     """Garante fatura e linha de estadia (valor_base) para uma reserva nova."""
     from faturacao.models import Fatura, ItemFatura
 
-    fatura, _ = Fatura.objects.get_or_create(
-        reserva=reserva,
-        defaults={"total": Decimal("0.00"), "status": "pendente"},
-    )
+    fatura = obter_fatura_principal_reserva(reserva)
+    if not fatura:
+        fatura = Fatura.objects.create(
+            reserva=reserva,
+            cliente=reserva.cliente.user,
+            total=Decimal("0.00"),
+            status="emitida",
+        )
     if not ItemFatura.objects.filter(fatura=fatura, descricao="Estadia").exists():
         add_item_fatura(
             fatura,
@@ -47,3 +49,13 @@ def criar_fatura_base_para_reserva(reserva) -> None:
             1,
             Decimal(str(reserva.valor_base)),
         )
+
+
+def obter_fatura_principal_reserva(reserva):
+    from faturacao.models import Fatura
+
+    return (
+        Fatura.objects.filter(reserva=reserva)
+        .order_by("id")
+        .first()
+    )

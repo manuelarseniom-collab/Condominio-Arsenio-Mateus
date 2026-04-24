@@ -79,7 +79,6 @@ def minhas_reservas(request):
     reservas = (
         Reserva.objects.filter(cliente__user=request.user)
         .select_related("unidade", "cliente")
-        .prefetch_related("fatura__pagamentos")
         .order_by("-id")
     )
     dados = [{"reserva": r, "status_pagamento": _status_pagamento(r)} for r in reservas]
@@ -89,7 +88,7 @@ def minhas_reservas(request):
 @cliente_required
 def detalhe_reserva(request, reserva_id: int):
     reserva = get_object_or_404(
-        Reserva.objects.select_related("unidade", "cliente", "fatura"),
+        Reserva.objects.select_related("unidade", "cliente"),
         pk=reserva_id,
         cliente__user=request.user,
     )
@@ -110,7 +109,7 @@ def detalhe_reserva(request, reserva_id: int):
 @cliente_required
 def resumo_pagamento(request, reserva_id: int):
     reserva = get_object_or_404(
-        Reserva.objects.select_related("unidade", "cliente", "fatura"),
+        Reserva.objects.select_related("unidade", "cliente"),
         pk=reserva_id,
         cliente__user=request.user,
     )

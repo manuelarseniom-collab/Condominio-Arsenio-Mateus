@@ -83,6 +83,10 @@ body.app-body {
     gap: 0.8rem;
 }
 
+.topbar-actions form {
+    margin: 0;
+}
+
 .content {
     padding: 1.2rem;
 }
@@ -123,6 +127,11 @@ body.app-body {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--text);
+}
+
+.btn-link.secondary:hover {
+    background: #1e293b;
+    border-color: #334155;
 }
 
 .login-card {

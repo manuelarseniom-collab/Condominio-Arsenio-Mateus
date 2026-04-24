@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.db import models, transaction
+from django.utils import timezone
 
 from usuarios.models import PerfilAcesso, PerfilUsuario
 
@@ -22,40 +23,94 @@ class TabelaPreco(models.Model):
 
 class Fatura(models.Model):
     STATUS = (
-        ("rascunho", "Rascunho"),
-        ("pendente", "Pendente"),
+        ("emitida", "Emitida"),
         ("paga", "Paga"),
         ("cancelada", "Cancelada"),
     )
 
-    reserva = models.OneToOneField(
-        "reservas.Reserva",
+    cliente = models.ForeignKey(
+        get_user_model(),
         on_delete=models.CASCADE,
-        related_name="fatura",
+        null=True,
+        blank=True,
+        related_name="faturas_emitidas",
     )
-    data_emissao = models.DateField(auto_now_add=True)
+    reserva = models.ForeignKey(
+        "reservas.Reserva",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="faturas",
+    )
+    numero_fatura = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    data_emissao = models.DateTimeField(auto_now_add=True)
     total = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
-    status = models.CharField(max_length=20, choices=STATUS, default="pendente")
+    status = models.CharField(max_length=20, choices=STATUS, default="emitida")
+    metodo_pagamento = models.CharField(max_length=50, blank=True, null=True)
+    pago_em = models.DateTimeField(blank=True, null=True)
+    enviado_email = models.BooleanField(default=False)
+    enviado_whatsapp = models.BooleanField(default=False)
+    emitido_por = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="faturas_criadas",
+    )
 
     class Meta:
         ordering = ["-id"]
 
     def __str__(self):
-        return f"Fatura #{self.pk} — {self.reserva_id}"
+        return self.numero_fatura or f"Fatura #{self.pk}"
+
+    @classmethod
+    def proximo_numero_fatura(cls):
+        ano = timezone.now().year
+        prefixo = f"FT-{ano}-"
+        ultima = (
+            cls.objects.filter(numero_fatura__startswith=prefixo)
+            .order_by("-numero_fatura")
+            .values_list("numero_fatura", flat=True)
+            .first()
+        )
+        sequencia = 1
+        if ultima:
+            try:
+                sequencia = int(ultima.split("-")[-1]) + 1
+            except (ValueError, IndexError):
+                sequencia = 1
+        return f"{prefixo}{sequencia:04d}"
+
+    def save(self, *args, **kwargs):
+        if not self.numero_fatura:
+            self.numero_fatura = self.proximo_numero_fatura()
+        if not self.cliente_id and self.reserva_id and self.reserva.cliente.user_id:
+            self.cliente = self.reserva.cliente.user
+        if self.status == "paga" and not self.pago_em:
+            self.pago_em = timezone.now()
+        super().save(*args, **kwargs)
 
 
 class ItemFatura(models.Model):
     fatura = models.ForeignKey(Fatura, on_delete=models.CASCADE, related_name="itens")
     descricao = models.CharField(max_length=200)
-    quantidade = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("1"))
+    quantidade = models.IntegerField(default=1)
     preco_unitario = models.DecimalField(max_digits=12, decimal_places=2)
-    total = models.DecimalField(max_digits=14, decimal_places=2)
+    total = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
 
     class Meta:
         ordering = ["id"]
 
     def __str__(self):
         return self.descricao
+
+    def subtotal(self):
+        return (Decimal(str(self.quantidade)) * Decimal(str(self.preco_unitario))).quantize(Decimal("0.01"))
+
+    def save(self, *args, **kwargs):
+        self.total = self.subtotal()
+        super().save(*args, **kwargs)
 
 
 class Pagamento(models.Model):
@@ -116,27 +171,32 @@ class Pagamento(models.Model):
         super().save(*args, **kwargs)
         if self.status == "aprovado":
             reserva = self.fatura.reserva
-            if reserva.status in (
-                "pendente",
-                "pre_reserva",
-                "aguardando_pagamento",
-                "pagamento_em_validacao",
-                "aguardando_confirmacao",
-                "rascunho",
-            ):
-                reserva.status = "confirmada"
-                reserva.save(update_fields=["status"])
-            cliente = reserva.cliente
-            cliente_updates = []
-            if cliente.situacao_financeira != "paga":
-                cliente.situacao_financeira = "paga"
-                cliente_updates.append("situacao_financeira")
-            if reserva.status == "confirmada" and cliente.estado != "ativo":
-                cliente.estado = "ativo"
-                cliente_updates.append("estado")
-            if cliente_updates:
-                cliente.save(update_fields=cliente_updates)
-            self._garantir_acesso_cliente_confirmado(reserva)
+            if reserva:
+                if reserva.status in (
+                    "pendente",
+                    "pre_reserva",
+                    "aguardando_pagamento",
+                    "pagamento_em_validacao",
+                    "aguardando_confirmacao",
+                    "rascunho",
+                ):
+                    reserva.status = "confirmada"
+                    reserva.save(update_fields=["status"])
+                cliente = reserva.cliente
+                cliente_updates = []
+                if cliente.situacao_financeira != "paga":
+                    cliente.situacao_financeira = "paga"
+                    cliente_updates.append("situacao_financeira")
+                if reserva.status == "confirmada" and cliente.estado != "ativo":
+                    cliente.estado = "ativo"
+                    cliente_updates.append("estado")
+                if cliente_updates:
+                    cliente.save(update_fields=cliente_updates)
+                self._garantir_acesso_cliente_confirmado(reserva)
+            self.fatura.status = "paga"
+            self.fatura.metodo_pagamento = self.metodo
+            self.fatura.pago_em = timezone.now()
+            self.fatura.save(update_fields=["status", "metodo_pagamento", "pago_em"])
             if prev_status != "aprovado":
                 from faturacao.notificacoes import enviar_fatura_por_email_apos_pagamento
 
