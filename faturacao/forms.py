@@ -24,6 +24,19 @@ class FaturaForm(forms.Form):
         initial=True,
         label="Incluir item automático da reserva",
     )
+    incluir_servicos_reserva = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Incluir serviços já registados na reserva",
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        reserva = cleaned.get("reserva")
+        cliente = cleaned.get("cliente")
+        if reserva and reserva.cliente.user_id and cliente and reserva.cliente_id != cliente.id:
+            self.add_error("cliente", "O cliente deve corresponder ao cliente da reserva selecionada.")
+        return cleaned
 
 
 class ItemManualForm(forms.Form):

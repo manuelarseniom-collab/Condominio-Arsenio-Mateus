@@ -6,6 +6,27 @@
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
+        <button type="submit" name="preencher_reserva" value="1" class="btn-link secondary">Carregar dados da reserva</button>
+        {% if reserva_preview %}
+            <hr>
+            <h3>Pré-visualização automática da reserva #{{ reserva_preview.id }}</h3>
+            <p><strong>Cliente:</strong> {{ reserva_preview.cliente.nome }} | <strong>Unidade:</strong> {{ reserva_preview.unidade.codigo }} ({{ reserva_preview.unidade.tipo }})</p>
+            <table class="data-table">
+                <thead><tr><th>Descrição</th><th>Qtd</th><th>Preço Unit.</th><th>Total</th></tr></thead>
+                <tbody>
+                    {% for item in itens_automaticos_preview %}
+                    <tr>
+                        <td>{{ item.descricao }}</td>
+                        <td>{{ item.quantidade }}</td>
+                        <td>{{ item.preco_unitario }}</td>
+                        <td>{{ item.total }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">Sem itens automáticos para esta reserva.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
         <h3>Itens manuais (serviços)</h3>
         {% for item_form in item_forms %}
             <fieldset style="margin-bottom: 1rem; border: 1px solid #ddd; padding: .75rem;">
