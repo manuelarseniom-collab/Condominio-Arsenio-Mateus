@@ -1,0 +1,50 @@
+{% extends "base_public.html" %}
+{% block title %}Pré-reserva — criar conta | Arsénio Mateus{% endblock %}
+
+{% block hero %}
+<section class="pub-hero pre-hero">
+    <h1>Criar conta e concluir</h1>
+    <p class="apt-hero-lead">A reserva ficará associada à conta com o email <strong>{{ resumo.email }}</strong>.</p>
+    {% if avisos_reserva %}
+    <div class="pub-alert pre-hero-alert">{{ avisos_reserva }}</div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="pub-section">
+    <div class="pre-resumo pub-card body">
+        <h3>Resumo</h3>
+        <ul>
+            <li>Apartamento: {{ unidade.codigo }} — {{ unidade.nome }}</li>
+            <li>Tipologia: {{ unidade.tipo }}</li>
+            <li>Check-in: {{ resumo.data_inicio }}</li>
+            <li>Check-out: {{ resumo.data_fim }}</li>
+            <li>Titular: {{ resumo.nome }}</li>
+            <li>Telefone: {{ resumo.telefone }}</li>
+        </ul>
+        <p class="pre-outras-vias">Para outras vias de pagamento (presencial, transferência acordada), <a href="{% url 'site_publico:contactos' %}">fale com a receção</a>.</p>
+    </div>
+
+    <form method="post" class="pre-form pub-card body">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="pre-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="pre-field">
+            <label for="id_password1">{{ form.password1.label }}</label>
+            {{ form.password1 }}
+            {{ form.password1.errors }}
+        </div>
+        <div class="pre-field">
+            <label for="id_password2">{{ form.password2.label }}</label>
+            {{ form.password2 }}
+            {{ form.password2.errors }}
+        </div>
+        <div class="pub-actions">
+            <button type="submit" class="btn-pub-primary">Concluir pré-reserva</button>
+            <a class="btn-pub-outline" href="{% url 'site_publico:pre_reserva_dados' %}">Voltar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

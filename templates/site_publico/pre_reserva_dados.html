@@ -1,0 +1,54 @@
+{% extends "base_public.html" %}
+{% block title %}Pré-reserva — dados | Arsénio Mateus{% endblock %}
+
+{% block hero %}
+<section class="pub-hero pre-hero">
+    <h1>Dados da estadia</h1>
+    <p class="apt-hero-lead">Apartamento <strong>{{ unidade.codigo }}</strong> — {{ unidade.nome }} ({{ unidade.tipo }}).</p>
+    <div class="pub-alert pre-hero-alert">A reserva só é ativada após pagamento confirmado ou validação da administração.</div>
+    <p class="pre-hero-servicos">Os serviços do portal ficam disponíveis a partir do primeiro dia da estadia.</p>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="pub-section pre-form-section">
+    <form method="post" class="pre-form pub-card body">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="pre-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="pre-field">
+            <label for="id_nome">{{ form.nome.label }}</label>
+            {{ form.nome }}
+            {{ form.nome.errors }}
+        </div>
+        <div class="pre-field">
+            <label for="id_telefone">{{ form.telefone.label }}</label>
+            {{ form.telefone }}
+            {{ form.telefone.errors }}
+        </div>
+        <div class="pre-field">
+            <label for="id_email">{{ form.email.label }}</label>
+            {{ form.email }}
+            {{ form.email.errors }}
+        </div>
+        <div class="pre-dates">
+            <div class="pre-field">
+                <label for="id_data_inicio">{{ form.data_inicio.label }}</label>
+                {{ form.data_inicio }}
+                {{ form.data_inicio.errors }}
+            </div>
+            <div class="pre-field">
+                <label for="id_data_fim">{{ form.data_fim.label }}</label>
+                {{ form.data_fim }}
+                {{ form.data_fim.errors }}
+            </div>
+        </div>
+        <p class="pre-calendario-nota">Utilize o calendário do sistema para escolher check-in e check-out (datas a partir de {{ hoje }}).</p>
+        <div class="pub-actions">
+            <button type="submit" class="btn-pub-primary">Continuar</button>
+            <a class="btn-pub-outline" href="{% url 'site_publico:pre_reserva_escolher' %}">Alterar apartamento</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

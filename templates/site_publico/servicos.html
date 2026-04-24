@@ -1,0 +1,19 @@
+{% extends "base_public.html" %}
+{% block title %}Servicos{% endblock %}
+{% block content %}
+<section class="pub-section">
+    <h2>Servicos para hospedes</h2>
+    <p>Os serviços podem ser visualizados por qualquer visitante. A solicitação efetiva só é liberada após reserva confirmada e check-in realizado.</p>
+    <div class="pub-grid">
+        <article class="pub-card"><div class="body"><h3>Limpeza</h3><p>Solicitação por diária durante a estadia ativa.</p></div></article>
+        <article class="pub-card"><div class="body"><h3>Lavandaria</h3><p>Tabela por peça com subtotal e total automático.</p></div></article>
+        <article class="pub-card"><div class="body"><h3>Restauracao</h3><p>Menu com itens e quantidades para pedido interno.</p></div></article>
+    </div>
+    <div class="pub-alert" style="margin-top:1rem;">
+        Os serviços ficam disponíveis apenas após o início da estadia.
+    </div>
+    <div class="pub-actions" style="margin-top:1.5rem;">
+        <a class="btn-pub-primary" href="{% url 'site_publico:solicitar_servico' %}">Solicitar servico</a>
+    </div>
+</section>
+{% endblock %}

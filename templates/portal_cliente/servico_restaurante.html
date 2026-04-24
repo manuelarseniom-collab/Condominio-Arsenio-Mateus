@@ -1,0 +1,34 @@
+{% extends "base_app.html" %}
+{% block title %}Serviço de restaurante{% endblock %}
+{% block content %}
+<h1>Restaurante</h1>
+<section class="card">
+    <p><strong>Reserva:</strong> {{ reserva.unidade.codigo }} ({{ reserva.data_inicio }} a {{ reserva.data_fim }})</p>
+</section>
+<section class="card">
+    <form method="post">
+        {% csrf_token %}
+        {% for categoria, itens in categorias.items %}
+        <h3>{{ categoria }}</h3>
+        <table class="data-table" style="margin-bottom:1rem;">
+            <thead>
+                <tr><th>Produto</th><th>Preço</th><th>Quantidade</th><th>Subtotal</th></tr>
+            </thead>
+            <tbody>
+                {% for i in itens %}
+                <tr>
+                    <td>{{ i.produto.nome }}</td>
+                    <td>Kz {{ i.produto.preco }}</td>
+                    <td><input type="number" min="0" name="qtd_{{ i.produto.id }}" value="{{ i.qtd }}" style="width:90px;"></td>
+                    <td>Kz {{ i.subtotal }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endfor %}
+        <p><strong>Total:</strong> Kz {{ total }}</p>
+        <button class="btn-primary" type="submit">Confirmar pedido</button>
+        <a class="btn-link secondary" href="{% url 'portal_cliente:servicos' %}">Voltar</a>
+    </form>
+</section>
+{% endblock %}

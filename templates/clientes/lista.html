@@ -1,0 +1,25 @@
+{% extends "base_app.html" %}
+{% block title %}Clientes{% endblock %}
+{% block content %}
+<h1>Clientes</h1>
+<section class="card">
+    <table class="data-table">
+        <thead><tr><th>ID</th><th>Nome</th><th>Telefone</th><th>Email</th><th>Estado</th><th>Situação financeira</th><th>Utilizador</th></tr></thead>
+        <tbody>
+        {% for c in clientes %}
+            <tr>
+                <td>{{ c.id }}</td>
+                <td>{{ c.nome }}</td>
+                <td>{{ c.telefone }}</td>
+                <td>{{ c.email }}</td>
+                <td>{{ c.get_estado_display }}</td>
+                <td>{{ c.get_situacao_financeira_display }}</td>
+                <td>{% if c.user %}{{ c.user.username }}{% else %}—{% endif %}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="7">Sem clientes registados.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

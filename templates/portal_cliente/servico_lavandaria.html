@@ -1,0 +1,31 @@
+{% extends "base_app.html" %}
+{% block title %}Serviço de lavandaria{% endblock %}
+{% block content %}
+<h1>Lavandaria</h1>
+<section class="card">
+    <p><strong>Reserva:</strong> {{ reserva.unidade.codigo }} ({{ reserva.data_inicio }} a {{ reserva.data_fim }})</p>
+</section>
+<section class="card">
+    <form method="post">
+        {% csrf_token %}
+        <table class="data-table">
+            <thead>
+                <tr><th>Peça</th><th>Preço unitário</th><th>Quantidade</th><th>Subtotal</th></tr>
+            </thead>
+            <tbody>
+                {% for l in linhas %}
+                <tr>
+                    <td>{{ l.nome }}</td>
+                    <td>Kz {{ l.preco }}</td>
+                    <td><input type="number" min="0" name="qtd_{{ l.codigo }}" value="{{ l.qtd }}" style="width:90px;"></td>
+                    <td>Kz {{ l.subtotal }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p><strong>Total geral:</strong> Kz {{ total }}</p>
+        <button class="btn-primary" type="submit">Confirmar pedido</button>
+        <a class="btn-link secondary" href="{% url 'portal_cliente:servicos' %}">Voltar</a>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Arsénio Mateus{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/public.css' %}">
+    {% block extrahead %}{% endblock %}
+</head>
+<body class="public-body">
+    <header class="pub-header">
+        <div class="pub-logo">ARSÉNIO MATEUS</div>
+        <nav class="pub-nav">
+            {% if perfil_atual == "visitante_interessado" %}
+            <a href="{% url 'site_publico:home' %}">Início</a>
+            <a href="{% url 'site_publico:apartamentos' %}">Apartamentos</a>
+            <a href="{% url 'buscar_apartamentos' %}">Disponibilidade</a>
+            <a href="{% url 'site_publico:servicos' %}">Serviços</a>
+            <a href="{% url 'site_publico:restaurante' %}">Restaurante</a>
+            <a href="{% url 'site_publico:home' %}#como-funciona">Como funciona</a>
+            <a href="{% url 'site_publico:faq' %}">FAQ</a>
+            <a href="{% url 'site_publico:depoimentos' %}">Depoimentos</a>
+            <a href="{% url 'site_publico:contactos' %}">Contactos</a>
+            <a class="pub-access-link pub-access-cliente" href="{% url 'usuarios:login_cliente' %}">Área do cliente</a>
+            <a class="pub-access-link pub-access-interno" href="{% url 'usuarios:acesso_interno' %}">Acesso interno</a>
+            {% elif perfil_atual == "cliente" %}
+            <a href="{% url 'site_publico:home' %}">Início</a>
+            <a href="{% url 'portal_cliente:reservas' %}">Minhas reservas</a>
+            <a href="{% url 'portal_cliente:faturas' %}">Meus pagamentos</a>
+            <a href="{% url 'portal_cliente:home' %}">Perfil</a>
+            <form method="post" action="{% url 'usuarios:logout' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-pub-outline">Sair</button>
+            </form>
+            {% elif perfil_atual == "trabalhador" %}
+            <a href="{% url 'dashboard:home' %}">Painel interno</a>
+            <a href="{% url 'clientes:lista' %}">Clientes</a>
+            <a href="{% url 'reservas:lista' %}">Reservas ativas</a>
+            <a href="{% url 'reservas:lista' %}">Reservas pendentes</a>
+            <a href="{% url 'faturacao:lista' %}">Pagamentos</a>
+            <form method="post" action="{% url 'usuarios:logout' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-pub-outline">Sair</button>
+            </form>
+            {% elif perfil_atual == "administrador" %}
+            <a href="{% url 'dashboard:home' %}">Painel administrativo</a>
+            <a href="{% url 'clientes:lista' %}">Clientes</a>
+            <a href="/admin/auth/user/">Trabalhadores</a>
+            <a href="{% url 'reservas:lista' %}">Reservas</a>
+            <a href="{% url 'faturacao:lista' %}">Financeiro</a>
+            <a href="{% url 'relatorios:lista' %}">Relatórios</a>
+            <a href="/admin/">Configurações</a>
+            <form method="post" action="{% url 'usuarios:logout' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-pub-outline">Sair</button>
+            </form>
+            {% endif %}
+        </nav>
+    </header>
+    {% if messages %}
+    <section class="pub-main" style="padding-bottom:0;">
+        {% for message in messages %}
+        <div class="pub-alert" style="margin-bottom:0.75rem;">{{ message }}</div>
+        {% endfor %}
+    </section>
+    {% endif %}
+    {% block hero %}{% endblock %}
+    <main class="pub-main">
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="pub-footer">
+        <div class="pub-footer-grid">
+            <div>
+                <h4>Arsénio Mateus</h4>
+                <p>Portal de apartamentos e serviços com experiência completa para clientes e operação.</p>
+            </div>
+            <div>
+                <h4>Contactos</h4>
+                <p>Email: <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
+                <p>Telefone: <a href="tel:{{ contact_phone_href }}">{{ contact_phone }}</a></p>
+            </div>
+            <div>
+                <h4>Informação legal</h4>
+                <p><a href="#">Política de privacidade</a></p>
+                <p><a href="#">Termos e condições</a></p>
+            </div>
+        </div>
+    </footer>
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{% extends "base_public.html" %}
+{% block title %}Contactos{% endblock %}
+{% block content %}
+<section class="pub-section">
+    <h2>Contactos</h2>
+    <p style="color: var(--pub-muted);">Fale com a receção através dos canais oficiais abaixo.</p>
+    <div class="pub-card body" style="max-width:560px;">
+        <p><strong>Email:</strong> <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
+        <p><strong>Telefone:</strong> <a href="tel:{{ contact_phone_href }}">{{ contact_phone }}</a></p>
+    </div>
+</section>
+{% endblock %}

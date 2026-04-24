@@ -1,0 +1,137 @@
+{% extends "base_public.html" %}
+
+{% block title %}Início | Arsénio Mateus{% endblock %}
+
+{% block hero %}
+<section class="pub-hero">
+    <h1>Apartamentos premium com serviços integrados e gestão profissional num só portal.</h1>
+    <p>Compare opções, conheça benefícios e conclua a sua reserva com segurança, transparência e acompanhamento em cada etapa.</p>
+    <p class="pub-perfil">Perfil atual: <strong>{{ perfil_atual_label }}</strong></p>
+    {% if perfil_atual == "visitante_interessado" %}
+    <div class="pub-actions">
+        <a class="btn-pub-primary" href="{% url 'site_publico:apartamentos' %}">Reservar agora</a>
+        <a class="btn-pub-outline" href="{% url 'site_publico:servicos' %}">Explorar serviços</a>
+        <a class="btn-pub-outline" href="#como-funciona">Como funciona</a>
+    </div>
+    {% elif perfil_atual == "cliente" %}
+    <div class="pub-actions">
+        <a class="btn-pub-primary" href="{% url 'portal_cliente:home' %}">Painel cliente</a>
+        <form method="post" action="{% url 'usuarios:logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-pub-outline">Sair</button>
+        </form>
+    </div>
+    {% elif perfil_atual == "trabalhador" %}
+    <div class="pub-actions">
+        <a class="btn-pub-primary" href="{% url 'dashboard:home' %}">Painel interno</a>
+        <form method="post" action="{% url 'usuarios:logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-pub-outline">Sair</button>
+        </form>
+    </div>
+    {% elif perfil_atual == "administrador" %}
+    <div class="pub-actions">
+        <a class="btn-pub-primary" href="{% url 'dashboard:home' %}">Painel administrativo</a>
+        <form method="post" action="{% url 'usuarios:logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-pub-outline">Sair</button>
+        </form>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="pub-section">
+    <div class="pub-alert">
+        A reserva só é ativada após pagamento confirmado ou validação da administração.
+    </div>
+</section>
+
+<section id="como-funciona" class="pub-section">
+    <h2>Como funciona a reserva</h2>
+    <div class="pub-steps">
+        <article><strong>1.</strong> Explore apartamentos, serviços e restaurante.</article>
+        <article><strong>2.</strong> Inicie o pedido de reserva com os seus dados.</article>
+        <article><strong>3.</strong> A reserva entra em estado pendente.</article>
+        <article><strong>4.</strong> Efetue o pagamento ou aguarde validação administrativa.</article>
+        <article><strong>5.</strong> Reserva confirmada: conta de cliente ativada pela receção/administração.</article>
+        <article><strong>6.</strong> Solicite serviços, refeições e acompanhe estados em tempo real.</article>
+    </div>
+</section>
+
+<section class="pub-section">
+    <h2>Experiência completa para viver melhor</h2>
+    <p class="pub-muted" style="color: var(--pub-muted); max-width: 640px;">
+        Infraestrutura residencial com serviços de apoio e operação organizada para garantir conforto, previsibilidade e confiança.
+    </p>
+    <div class="pub-grid">
+        <article class="pub-card">
+            <div class="img-ph"></div>
+            <div class="body">
+                <h3>Apartamentos</h3>
+                <p>Tipologias variadas, preços claros e condições transparentes para escolher com segurança.</p>
+                <ul>
+                    <li>Comparação por tipologia e valor</li>
+                    <li>Processo de reserva simples</li>
+                    <li>Gestão digital do contrato</li>
+                </ul>
+                <a class="btn-pub-primary" href="{% url 'site_publico:apartamentos' %}">Ver apartamentos</a>
+            </div>
+        </article>
+        <article class="pub-card">
+            <div class="img-ph"></div>
+            <div class="body">
+                <h3>Serviços</h3>
+                <p>Limpeza, lavandaria e manutenção com equipas especializadas e acompanhamento por estado.</p>
+                <ul>
+                    <li>Pedidos com rastreio em tempo real</li>
+                    <li>Atendimento por área especializada</li>
+                    <li>Histórico para controlo do cliente</li>
+                </ul>
+                <a class="btn-pub-primary" href="{% url 'site_publico:servicos' %}">Explorar serviços</a>
+            </div>
+        </article>
+        <article class="pub-card">
+            <div class="img-ph"></div>
+            <div class="body">
+                <h3>Restaurante</h3>
+                <p>Refeições e bebidas com pedidos integrados à sua reserva para máxima comodidade.</p>
+                <ul>
+                    <li>Pedidos ligados ao apartamento</li>
+                    <li>Fluxo rápido de preparação e entrega</li>
+                    <li>Registo para consulta posterior</li>
+                </ul>
+                <a class="btn-pub-primary" href="{% url 'site_publico:restaurante' %}">Conhecer restaurante</a>
+            </div>
+        </article>
+    </div>
+</section>
+
+<section class="pub-section">
+    <h2>Depoimentos de clientes</h2>
+    <div class="pub-grid">
+        <article class="pub-card body">
+            <p>"Processo claro desde a reserva até ao check-in. Transmitiu muita confiança."</p>
+            <strong>Mariana F.</strong>
+        </article>
+        <article class="pub-card body">
+            <p>"Consegui resolver limpeza e refeições pelo portal sem chamadas nem atrasos."</p>
+            <strong>Paulo T.</strong>
+        </article>
+        <article class="pub-card body">
+            <p>"Serviço profissional e operação organizada. Excelente para estadias prolongadas."</p>
+            <strong>Carla M.</strong>
+        </article>
+    </div>
+</section>
+
+<section class="pub-section">
+    <h2>FAQ</h2>
+    <div class="pub-faq">
+        <article><strong>Quando tenho acesso completo ao portal do cliente?</strong><p>Após confirmação da reserva por pagamento aprovado ou validação da administração.</p></article>
+        <article><strong>Posso acompanhar o estado dos serviços?</strong><p>Sim. Cada solicitação mostra estado, histórico e atualização por equipa responsável.</p></article>
+        <article><strong>Existe acesso separado para trabalhadores?</strong><p>Sim. Cada colaborador visualiza apenas tarefas da sua área operacional.</p></article>
+    </div>
+</section>
+{% endblock %}

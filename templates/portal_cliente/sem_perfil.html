@@ -1,0 +1,9 @@
+{% extends "base_app.html" %}
+{% block title %}Sem perfil de cliente{% endblock %}
+{% block content %}
+<section class="card">
+    <h1>Acesso ao portal</h1>
+    <p>A sua conta ainda não está associada a um registo de cliente confirmado. Contacte a administração ou a receção.</p>
+    <a class="btn-link" href="{% url 'dashboard:home' %}">Voltar ao painel</a>
+</section>
+{% endblock %}

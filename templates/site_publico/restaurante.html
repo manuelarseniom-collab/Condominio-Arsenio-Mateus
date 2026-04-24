@@ -1,0 +1,11 @@
+{% extends "base_public.html" %}
+{% block title %}Restaurante{% endblock %}
+{% block content %}
+<section class="pub-section">
+    <h2>Restaurante</h2>
+    <p style="color: var(--pub-muted);">Pequeno almoco, almoco, jantar e bebidas — precos base alinhados ao sistema interno.</p>
+    <div class="pub-actions">
+        <a class="btn-pub-primary" href="{% url 'usuarios:login' %}">Fazer pedido</a>
+    </div>
+</section>
+{% endblock %}

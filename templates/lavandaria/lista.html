@@ -1,0 +1,24 @@
+{% extends "base_app.html" %}
+{% block title %}Lavandaria{% endblock %}
+{% block content %}
+<h1>Pedidos de lavandaria</h1>
+<section class="card">
+    <table class="data-table">
+        <thead><tr><th>ID</th><th>Reserva</th><th>Tipo</th><th>Descricao</th><th>Total</th><th>Estado</th></tr></thead>
+        <tbody>
+        {% for p in pedidos %}
+            <tr>
+                <td>{{ p.id }}</td>
+                <td>#{{ p.reserva_id }}</td>
+                <td>{{ p.get_tipo_display }}</td>
+                <td>{{ p.descricao }}</td>
+                <td>{{ p.preco_total }}</td>
+                <td>{{ p.get_status_display }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6">Sem pedidos.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

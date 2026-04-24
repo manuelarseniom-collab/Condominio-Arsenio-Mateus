@@ -1,0 +1,22 @@
+{% extends "base_public.html" %}
+
+{% block title %}Acesso interno | Arsenio Mateus{% endblock %}
+
+{% block content %}
+<section class="pub-section" style="max-width: 980px;">
+    <h1>Acesso interno</h1>
+    <p style="color: var(--pub-muted);">Selecione o tipo de acesso interno ao portal.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+        <article class="pub-card body">
+            <h3>Trabalhador</h3>
+            <p>Acesso destinado à receção e equipas operacionais autorizadas.</p>
+            <a class="btn-pub-primary" href="{% url 'usuarios:login_staff' %}">Entrar como trabalhador</a>
+        </article>
+        <article class="pub-card body">
+            <h3>Administrador</h3>
+            <p>Acesso reservado à administração do sistema e do condomínio.</p>
+            <a class="btn-pub-outline" href="{% url 'usuarios:login_admin' %}">Entrar como administrador</a>
+        </article>
+    </div>
+</section>
+{% endblock %}

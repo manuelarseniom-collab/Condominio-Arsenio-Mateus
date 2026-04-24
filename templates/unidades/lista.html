@@ -1,0 +1,24 @@
+{% extends "base_app.html" %}
+{% block title %}Unidades{% endblock %}
+{% block content %}
+<h1>Unidades</h1>
+<section class="card">
+    <table class="data-table">
+        <thead><tr><th>Codigo</th><th>Nome</th><th>Andar</th><th>Tipo</th><th>Preco mensal</th><th>Disponivel</th></tr></thead>
+        <tbody>
+        {% for u in unidades %}
+            <tr>
+                <td>{{ u.codigo }}</td>
+                <td>{{ u.nome }}</td>
+                <td>{{ u.andar }}</td>
+                <td>{{ u.tipo }}</td>
+                <td>{{ u.preco_mensal }}</td>
+                <td>{% if u.disponivel %}Sim{% else %}Nao{% endif %}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6">Sem unidades.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

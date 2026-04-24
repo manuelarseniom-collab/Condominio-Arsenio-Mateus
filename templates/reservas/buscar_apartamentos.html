@@ -1,0 +1,111 @@
+{% extends "base_public.html" %}
+{% load static %}
+{% block title %}Pesquisar disponibilidade | Arsénio Mateus{% endblock %}
+{% block extrahead %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<style>
+  .disp-hero { background: linear-gradient(135deg, #e0f2fe 0%, #f8fafc 55%, #eef2ff 100%); padding: 2.5rem 0; margin: -2rem -5% 2rem; padding-left: 5%; padding-right: 5%; }
+  .preco-destaque { font-size: 1.35rem; font-weight: 800; color: #1d4ed8; }
+  .card-unidade { border-radius: 14px; border: 1px solid #e2e8f0; transition: box-shadow .2s; }
+  .card-unidade:hover { box-shadow: 0 12px 32px rgba(37,99,235,.12); }
+  .badge-disp { background: #dcfce7; color: #166534; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block hero %}
+<div class="disp-hero">
+  <div class="container-fluid px-0" style="max-width: 1100px;">
+    <h1 class="display-6 fw-bold">Pesquisar disponibilidade</h1>
+    <p class="lead text-secondary mb-0" style="max-width: 720px;">
+      Escolha o período da sua estadia e encontre apartamentos realmente disponíveis, com segurança e sem risco de conflito de reservas.
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0" style="max-width: 1100px;">
+  <section class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 fw-bold mb-3">Filtros de pesquisa</h2>
+      <p class="text-secondary small mb-3">A tipologia e a unidade selecionada já definem os quartos e características do apartamento.</p>
+      <form method="get" action="{% url 'buscar_apartamentos' %}#resultados" novalidate>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="id_data_checkin">{{ form.data_checkin.label }}</label>
+            {{ form.data_checkin }}
+            {{ form.data_checkin.errors }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="id_data_checkout">{{ form.data_checkout.label }}</label>
+            {{ form.data_checkout }}
+            {{ form.data_checkout.errors }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="id_tipologia">{{ form.tipologia.label }}</label>
+            {{ form.tipologia }}
+            {{ form.tipologia.errors }}
+          </div>
+          <div class="col-md-8">
+            <label class="form-label" for="id_andar">{{ form.andar.label }}</label>
+            {{ form.andar }}
+            {{ form.andar.errors }}
+          </div>
+        </div>
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger mt-3">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="mt-4">
+          <input type="hidden" name="pesquisar" value="1">
+          <button type="submit" class="btn btn-primary btn-lg px-4">Ver apartamentos disponíveis</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  {% if pesquisado %}
+  <section class="mb-5" id="resultados">
+    <h2 class="h5 fw-bold mb-3">Resultados</h2>
+    {% if datas_busca %}
+    <p class="text-secondary small mb-3">
+      Período: <strong>{{ datas_busca.checkin|date:"d/m/Y" }}</strong> — <strong>{{ datas_busca.checkout|date:"d/m/Y" }}</strong>
+    </p>
+    {% endif %}
+    {% if resultados %}
+    <div class="row g-3">
+      {% for u in resultados %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card card-unidade h-100">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h3 class="h5 mb-0">Apartamento {{ u.codigo }}</h3>
+              <span class="badge badge-disp rounded-pill">Disponível</span>
+            </div>
+            <p class="text-secondary small mb-1">
+              {% if u.andar == 0 %}Rés do chão{% else %}{{ u.andar }}.º andar{% endif %}
+              · {{ u.tipo }}
+            </p>
+            {% if u.descricao %}
+            <p class="text-secondary small mb-2">{{ u.descricao }}</p>
+            {% endif %}
+            <p class="preco-destaque mt-2">Kz {{ u.preco_mensal|floatformat:0 }}</p>
+            <div class="mt-auto pt-3">
+              <a class="btn btn-primary w-100"
+                 href="{% url 'iniciar_pre_reserva' u.pk %}?checkin={{ datas_busca.checkin|date:'Y-m-d' }}&checkout={{ datas_busca.checkout|date:'Y-m-d' }}">
+                Selecionar apartamento
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-light border" role="status">
+      Não foram encontrados apartamentos disponíveis para os filtros e datas escolhidos.
+    </div>
+    {% endif %}
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

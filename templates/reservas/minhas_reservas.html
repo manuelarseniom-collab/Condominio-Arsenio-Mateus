@@ -1,0 +1,50 @@
+{% extends "base_public.html" %}
+{% block title %}Minhas reservas | Arsénio Mateus{% endblock %}
+
+{% block content %}
+<section class="pub-section" style="max-width: 1100px;">
+  <h1>Minhas reservas</h1>
+  <p class="text-secondary">Acompanhe o estado das suas reservas e retome pagamentos pendentes.</p>
+
+  {% if dados %}
+  <div class="pub-card body">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:.5rem;">Código</th>
+          <th style="text-align:left;padding:.5rem;">Apartamento</th>
+          <th style="text-align:left;padding:.5rem;">Datas</th>
+          <th style="text-align:left;padding:.5rem;">Valor</th>
+          <th style="text-align:left;padding:.5rem;">Reserva</th>
+          <th style="text-align:left;padding:.5rem;">Pagamento</th>
+          <th style="text-align:left;padding:.5rem;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for item in dados %}
+        <tr>
+          <td style="padding:.5rem;">#{{ item.reserva.pk }}</td>
+          <td style="padding:.5rem;">{{ item.reserva.unidade.codigo }} · {{ item.reserva.unidade.tipo }}</td>
+          <td style="padding:.5rem;">{{ item.reserva.data_inicio|date:"d/m/Y" }} — {{ item.reserva.data_fim|date:"d/m/Y" }}</td>
+          <td style="padding:.5rem;">Kz {{ item.reserva.valor_base|floatformat:0 }}</td>
+          <td style="padding:.5rem;">{{ item.reserva.get_status_display }}</td>
+          <td style="padding:.5rem;">{{ item.status_pagamento|title }}</td>
+          <td style="padding:.5rem;">
+            <a href="{% url 'reservas:detalhe_reserva' item.reserva.pk %}">Ver detalhes</a>
+            {% if item.reserva.status == "aguardando_pagamento" or item.reserva.status == "pagamento_em_validacao" %}
+              · <a href="{% url 'reservas:resumo_pagamento' item.reserva.pk %}">Continuar pagamento</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="pub-card body">
+      <p>Ainda não tem reservas registadas.</p>
+      <a class="btn-pub-primary" href="{% url 'buscar_apartamentos' %}">Pesquisar disponibilidade</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

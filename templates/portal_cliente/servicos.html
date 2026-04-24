@@ -1,0 +1,38 @@
+{% extends "base_app.html" %}
+{% block title %}Serviços do hóspede{% endblock %}
+{% block content %}
+<h1>Serviços</h1>
+{% if mensagem_servicos %}
+<section class="card" style="border-left:4px solid #2563eb;">
+    <p>{{ mensagem_servicos }}</p>
+</section>
+{% endif %}
+<section class="card">
+    <p><strong>Área de serviços do cliente:</strong> Limpeza, Lavandaria e Restaurante.</p>
+    {% if pode_solicitar_servicos %}
+    <p>Pode solicitar serviços para a reserva <strong>{{ reserva_servicos.unidade.codigo }}</strong> ({{ reserva_servicos.data_inicio }} a {{ reserva_servicos.data_fim }}).</p>
+    {% else %}
+    <p><strong>Este serviço só pode ser solicitado após reserva confirmada e check-in realizado.</strong></p>
+    {% endif %}
+</section>
+<section class="card">
+    <div class="grid">
+        <article class="card">
+            <h3>Limpeza</h3>
+            <p>Defina dias e data de início. Preço fixo diário: Kz 10.000.</p>
+            <a class="btn-link secondary" href="{% url 'portal_cliente:servico_limpeza' %}">{% if pode_solicitar_servicos %}Solicitar limpeza{% else %}Ver detalhes{% endif %}</a>
+        </article>
+        <article class="card">
+            <h3>Lavandaria</h3>
+            <p>Selecione peças, quantidades, subtotal automático e total geral.</p>
+            <a class="btn-link secondary" href="{% url 'portal_cliente:servico_lavandaria' %}">{% if pode_solicitar_servicos %}Solicitar lavandaria{% else %}Ver tabela{% endif %}</a>
+        </article>
+        <article class="card">
+            <h3>Restaurante</h3>
+            <p>Menu completo com bebidas, refeições e pequeno-almoço.</p>
+            <a class="btn-link secondary" href="{% url 'portal_cliente:servico_restaurante' %}">{% if pode_solicitar_servicos %}Fazer pedido{% else %}Ver menu{% endif %}</a>
+        </article>
+    </div>
+    <p><a class="btn-link" href="{% url 'operacoes:historico_cliente' %}">Ver histórico de solicitações</a></p>
+</section>
+{% endblock %}

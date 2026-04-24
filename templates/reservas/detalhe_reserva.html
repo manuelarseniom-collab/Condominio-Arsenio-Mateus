@@ -1,0 +1,56 @@
+{% extends "base_public.html" %}
+{% block title %}Detalhe da reserva | Arsénio Mateus{% endblock %}
+
+{% block content %}
+<section class="pub-section" style="max-width: 980px;">
+  <h1>Reserva #{{ reserva.pk }}</h1>
+  <p class="text-secondary">Detalhes completos da reserva, pagamento e acompanhamento.</p>
+
+  <div class="pub-card body" style="margin-bottom:1rem;">
+    <h3>Dados pessoais guardados</h3>
+    <p><strong>Nome:</strong> {{ reserva.nome_completo }}</p>
+    <p><strong>Email:</strong> {{ reserva.email }}</p>
+    <p><strong>Telefone:</strong> {{ reserva.telefone }}</p>
+    <p><strong>Nacionalidade:</strong> {{ reserva.nacionalidade }}</p>
+    <p><strong>Documento:</strong> {{ reserva.tipo_documento }} — {{ reserva.numero_documento_identificacao }}</p>
+    <p><strong>Morada:</strong> {{ reserva.morada|default:"-" }}, {{ reserva.cidade|default:"-" }}, {{ reserva.pais_residencia|default:"-" }}</p>
+  </div>
+
+  <div class="pub-card body" style="margin-bottom:1rem;">
+    <h3>Dados da estadia e unidade</h3>
+    <p><strong>Apartamento:</strong> {{ reserva.unidade.codigo }} — {{ reserva.unidade.tipo }}</p>
+    <p><strong>Andar:</strong> {{ reserva.unidade.andar }}</p>
+    <p><strong>Entrada:</strong> {{ reserva.data_inicio|date:"d/m/Y" }}</p>
+    <p><strong>Saída:</strong> {{ reserva.data_fim|date:"d/m/Y" }}</p>
+    <p><strong>Hóspedes:</strong> {{ reserva.numero_hospedes }}</p>
+    <p><strong>Finalidade:</strong> {{ reserva.finalidade_estadia|default:"-" }}</p>
+    <p><strong>Observações:</strong> {{ reserva.observacoes|default:"-" }}</p>
+    <p><strong>Pedido especial:</strong> {{ reserva.pedido_especial|default:"-" }}</p>
+    <p><strong>Valor:</strong> Kz {{ reserva.valor_base|floatformat:0 }}</p>
+    <p><strong>Estado atual:</strong> {{ reserva.get_status_display }}</p>
+  </div>
+
+  <div class="pub-card body" style="margin-bottom:1rem;">
+    <h3>Pagamento</h3>
+    <p><strong>Entidade:</strong> {{ reserva.pagamento_entidade }}</p>
+    <p><strong>Referência:</strong> {{ reserva.pagamento_referencia }}</p>
+    <p>{{ instrucoes_pagamento }}</p>
+    <h4>Histórico básico</h4>
+    <ul>
+      {% for p in pagamentos %}
+      <li>{{ p.data|date:"d/m/Y H:i" }} — {{ p.metodo }} — {{ p.get_status_display }} — Kz {{ p.valor|floatformat:0 }}</li>
+      {% empty %}
+      <li>Sem movimentos de pagamento.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="pub-actions">
+    {% if whatsapp_rececao %}
+    <a class="btn-pub-outline" href="https://wa.me/{{ whatsapp_rececao }}" target="_blank" rel="noopener">Contactar receção</a>
+    {% endif %}
+    <a class="btn-pub-primary" href="{% url 'reservas:resumo_pagamento' reserva.pk %}">Continuar pagamento</a>
+    <a class="btn-pub-outline" href="{% url 'site_publico:contactos' %}">Enviar comprovativo</a>
+  </div>
+</section>
+{% endblock %}

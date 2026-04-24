@@ -1,0 +1,32 @@
+{% extends "base_public.html" %}
+{% block title %}Pré-reserva concluída | Arsénio Mateus{% endblock %}
+
+{% block hero %}
+<section class="pub-hero pre-hero">
+    <h1>Pré-reserva registada</h1>
+    <p class="apt-hero-lead">Reserva n.º <strong>{{ reserva.pk }}</strong> — estado: <strong>{{ reserva.get_status_display }}</strong>.</p>
+    <div class="pub-alert pre-hero-alert">A reserva só é ativada após pagamento confirmado ou validação da administração.</div>
+    <p class="pre-hero-servicos">Os serviços do portal ficam disponíveis a partir do primeiro dia da estadia.</p>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="pub-section">
+    <div class="pub-card body pre-sucesso-ref">
+        <h3>Referência para pagamento</h3>
+        <p><strong>Cliente:</strong> {{ reserva.nome_completo }}</p>
+        <p><strong>Entidade:</strong> {{ reserva.pagamento_entidade }}</p>
+        <p><strong>Referência:</strong> {{ reserva.pagamento_referencia }}</p>
+        <p><strong>Valor (fatura):</strong> {{ reserva.valor_base }} Kz</p>
+        <p class="pre-instrucoes">{{ instrucoes_pagamento }}</p>
+        {% if whatsapp_rececao %}
+        <p><a class="btn-pub-outline" href="https://wa.me/{{ whatsapp_rececao }}" target="_blank" rel="noopener">WhatsApp da receção</a></p>
+        {% endif %}
+        <p>Após o pagamento ser validado no sistema, a reserva passa a <strong>confirmada</strong> e o acesso com <strong>password de cliente</strong> é ativado para a área do cliente.</p>
+    </div>
+    <div class="pub-actions">
+        <a class="btn-pub-primary" href="{% url 'site_publico:home' %}">Voltar ao início</a>
+        <a class="btn-pub-outline" href="{% url 'site_publico:contactos' %}">Contactar receção</a>
+    </div>
+</section>
+{% endblock %}

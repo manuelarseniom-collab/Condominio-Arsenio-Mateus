@@ -1,0 +1,34 @@
+{% extends "base_public.html" %}
+{% block title %}Pré-reserva — escolher apartamento | Arsénio Mateus{% endblock %}
+
+{% block hero %}
+<section class="pub-hero pre-hero">
+    <h1>Pré-reserva</h1>
+    <p class="apt-hero-lead">Escolha um apartamento disponível. A seguir indicará as datas e criará a conta para associar a reserva.</p>
+    <div class="pub-alert pre-hero-alert">A reserva só é ativada após pagamento confirmado ou validação da administração.</div>
+    <p class="pre-hero-servicos">Os serviços do portal ficam disponíveis a partir do primeiro dia da estadia.</p>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="pub-section">
+    {% if tipo_filtro %}
+    <p class="apt-lead">Filtro ativo: <strong>{{ tipo_filtro }}</strong>. <a href="{% url 'site_publico:pre_reserva_escolher' %}">Ver todas as unidades</a></p>
+    {% endif %}
+    <div class="pre-unidades">
+        {% for u in unidades %}
+        <article class="pre-unidade-card">
+            <h3>{{ u.codigo }}</h3>
+            <p class="pre-meta">{{ u.nome }} — {{ u.tipo }} · {% if u.andar == 0 %}Rés do chão{% else %}{{ u.andar }}.º andar{% endif %}</p>
+            <form method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="unidade_id" value="{{ u.pk }}">
+                <button type="submit" class="btn-pub-primary">Selecionar</button>
+            </form>
+        </article>
+        {% empty %}
+        <p>Não há apartamentos disponíveis com estes critérios. <a href="{% url 'site_publico:contactos' %}">Contacte a receção</a>.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

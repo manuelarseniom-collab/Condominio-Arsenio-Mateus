@@ -1,0 +1,27 @@
+from django.urls import path
+
+from . import views
+from .pre_reserva_views import (
+    pre_reserva_conta,
+    pre_reserva_dados,
+    pre_reserva_escolher_unidade,
+    pre_reserva_sucesso,
+)
+
+
+app_name = "site_publico"
+
+urlpatterns = [
+    path("", views.home, name="home"),
+    path("pre-reserva/", pre_reserva_escolher_unidade, name="pre_reserva_escolher"),
+    path("pre-reserva/dados/", pre_reserva_dados, name="pre_reserva_dados"),
+    path("pre-reserva/conta/", pre_reserva_conta, name="pre_reserva_conta"),
+    path("pre-reserva/concluido/", pre_reserva_sucesso, name="pre_reserva_sucesso"),
+    path("apartamentos/", views.apartamentos, name="apartamentos"),
+    path("servicos/", views.servicos, name="servicos"),
+    path("servicos/solicitar/", views.solicitar_servico, name="solicitar_servico"),
+    path("restaurante/", views.restaurante, name="restaurante"),
+    path("contactos/", views.contactos, name="contactos"),
+    path("faq/", views.faq, name="faq"),
+    path("depoimentos/", views.depoimentos, name="depoimentos"),
+]

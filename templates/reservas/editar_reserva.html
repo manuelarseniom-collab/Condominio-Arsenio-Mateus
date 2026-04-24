@@ -1,0 +1,16 @@
+{% extends "base_public.html" %}
+{% block title %}Editar dados da reserva | Arsénio Mateus{% endblock %}
+
+{% block content %}
+<section class="pub-section" style="max-width: 900px;">
+  <h1>Editar dados da reserva #{{ reserva.pk }}</h1>
+  <form method="post" class="pub-card body">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="pub-actions">
+      <button class="btn-pub-primary" type="submit">Guardar alterações</button>
+      <a class="btn-pub-outline" href="{% url 'reservas:resumo_pagamento' reserva.pk %}">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

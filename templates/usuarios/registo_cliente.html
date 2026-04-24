@@ -1,0 +1,13 @@
+{% extends "base_public.html" %}
+{% block title %}Registo de cliente{% endblock %}
+{% block content %}
+<section class="pub-section" style="max-width:520px;">
+    <h1>Criar conta</h1>
+    <p>Ao criar conta, o perfil inicia como cliente_pendente ate a reserva ser confirmada.</p>
+    <form method="post" class="pub-card" style="padding:1.25rem;">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn-pub-primary">Registar</button>
+    </form>
+</section>
+{% endblock %}

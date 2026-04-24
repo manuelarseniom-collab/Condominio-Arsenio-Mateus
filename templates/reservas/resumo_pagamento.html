@@ -1,0 +1,51 @@
+{% extends "base_public.html" %}
+{% block title %}Resumo da pré-reserva e pagamento | Arsénio Mateus{% endblock %}
+
+{% block content %}
+<section class="pub-section" style="max-width: 980px;">
+  <h1>Resumo da pré-reserva e pagamento</h1>
+  <p class="text-secondary">A sua pré-reserva foi guardada. Revise os dados abaixo e avance para o pagamento.</p>
+
+  <div class="pub-card body" style="margin-bottom: 1rem;">
+    <h3>Dados pessoais</h3>
+    <p><strong>Nome completo:</strong> {{ reserva.nome_completo }}</p>
+    <p><strong>Telefone:</strong> {{ reserva.telefone }}</p>
+    <p><strong>Email:</strong> {{ reserva.email }}</p>
+    <p><strong>Nacionalidade:</strong> {{ reserva.nacionalidade }}</p>
+    <p><strong>Documento:</strong> {{ reserva.tipo_documento }} — {{ reserva.numero_documento_identificacao }}</p>
+    <p><strong>Morada:</strong> {{ reserva.morada|default:"-" }}</p>
+    <p><strong>Cidade / País:</strong> {{ reserva.cidade|default:"-" }} / {{ reserva.pais_residencia|default:"-" }}</p>
+  </div>
+
+  <div class="pub-card body" style="margin-bottom: 1rem;">
+    <h3>Reserva</h3>
+    <p><strong>Apartamento:</strong> {{ reserva.unidade.codigo }} ({{ reserva.unidade.tipo }})</p>
+    <p><strong>Andar:</strong> {{ reserva.unidade.andar }}</p>
+    <p><strong>Preço:</strong> Kz {{ reserva.unidade.preco_mensal|floatformat:0 }}</p>
+    <p><strong>Entrada:</strong> {{ reserva.data_inicio|date:"d/m/Y" }}</p>
+    <p><strong>Saída:</strong> {{ reserva.data_fim|date:"d/m/Y" }}</p>
+    <p><strong>Número de hóspedes:</strong> {{ reserva.numero_hospedes }}</p>
+    <p><strong>Finalidade da estadia:</strong> {{ reserva.finalidade_estadia|default:"-" }}</p>
+    <p><strong>Observações:</strong> {{ reserva.observacoes|default:"-" }}</p>
+    <p><strong>Pedido especial:</strong> {{ reserva.pedido_especial|default:"-" }}</p>
+    <p><strong>Estado da reserva:</strong> {{ reserva.get_status_display }}</p>
+    <p><strong>Estado do pagamento:</strong> {% if pagamento %}{{ pagamento.get_status_display }}{% else %}Pendente{% endif %}</p>
+  </div>
+
+  <div class="pub-card body" style="margin-bottom: 1rem;">
+    <h3>Referência de pagamento bancário</h3>
+    <p><strong>Entidade:</strong> {{ reserva.pagamento_entidade }}</p>
+    <p><strong>Referência:</strong> {{ reserva.pagamento_referencia }}</p>
+    <p>{{ instrucoes_pagamento }}</p>
+  </div>
+
+  <div class="pub-actions">
+    <a class="btn-pub-primary" href="{% url 'reservas:detalhe_reserva' reserva.pk %}">Ver referência de pagamento bancário</a>
+    {% if whatsapp_rececao %}
+    <a class="btn-pub-outline" href="https://wa.me/{{ whatsapp_rececao }}" target="_blank" rel="noopener">Contactar receção para outras vias de pagamento</a>
+    {% endif %}
+    <a class="btn-pub-outline" href="{% url 'reservas:editar_reserva' reserva.pk %}">Editar dados da reserva</a>
+    <a class="btn-pub-outline" href="{% url 'reservas:minhas_reservas' %}">Ver minhas reservas</a>
+  </div>
+</section>
+{% endblock %}

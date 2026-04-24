@@ -1,0 +1,302 @@
+{% extends "base_public.html" %}
+{% block title %}Apartamentos | Arsénio Mateus{% endblock %}
+
+{% block hero %}
+<section class="apt-hero pub-hero">
+    <p class="apt-hero-kicker">Edifício com rés operacional e seis andares habitacionais</p>
+    <h1>Apartamentos</h1>
+    <p class="apt-hero-lead">
+        Explore tipologias, preços em Kwanzas, comodidades e a distribuição por piso. Compare o valor de cada categoria e avance para a pré-reserva com total transparência.
+    </p>
+    <div class="pub-actions">
+        <a class="btn-pub-primary" href="{% url 'buscar_apartamentos' %}">Iniciar pré-reserva</a>
+        <a class="btn-pub-outline" href="{% url 'site_publico:contactos' %}">Falar com a receção</a>
+    </div>
+    <div class="apt-hero-notes">
+        <p class="apt-hero-note">
+            A reserva só é ativada após pagamento confirmado ou validação da administração.
+        </p>
+        <p class="apt-hero-note apt-hero-note--secondary">
+            Os serviços do portal ficam disponíveis a partir do primeiro dia da estadia.
+        </p>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<section class="pub-section apt-section">
+    <h2>Visão geral do edifício</h2>
+    <p class="apt-lead">
+        Para além dos apartamentos, o edifício integra serviços no rés do chão: receção permanente, lavandaria, restaurante com esplanada e piscina na área exterior, cozinha central de apoio, área de serviços para equipas, gabinete do administrador e secretaria. Tudo orientado a uma estadia cómoda e a uma operação profissional.
+    </p>
+    <div class="apt-pill-row">
+        <span class="apt-pill">Receção</span>
+        <span class="apt-pill">Lavandaria</span>
+        <span class="apt-pill">Restaurante e esplanada</span>
+        <span class="apt-pill">Piscina</span>
+        <span class="apt-pill">Apoio administrativo</span>
+    </div>
+</section>
+
+<section class="pub-section apt-section" aria-labelledby="tipologias-titulo">
+    <div class="apt-section-head">
+        <h2 id="tipologias-titulo">Tipologias e preços</h2>
+        <p class="apt-lead apt-lead-tight">
+            Escolha a categoria que melhor se adequa à sua estadia. Os valores indicados servem de referência para decisão; disponibilidade e condições finais confirmam-se na pré-reserva.
+        </p>
+    </div>
+
+    <div class="apt-filtros-futuro" role="note" data-future="filtros-disponibilidade">
+        <strong>Em integração:</strong> filtros por tipologia, calendário de disponibilidade em tempo real e ligação ao motor de reservas e pagamentos. Os cartões abaixo já usam identificadores (<code>data-tipologia</code>) preparados para essa ligação.
+    </div>
+
+    <div class="apt-tipologias-grid">
+        <article class="apt-card-tipologia" id="tipologia-t0" data-tipologia="T0">
+            <header>
+                <h3>T0</h3>
+                <p class="apt-preco">Kz 500.000</p>
+            </header>
+            <p class="apt-card-desc">Estúdio funcional, ideal para estadias curtas ou viajantes que valorizam simplicidade e conforto essencial.</p>
+            <ul class="apt-amenities">
+                <li>Quarto e sala em espaço comum</li>
+                <li>Kitchenette</li>
+                <li>WC</li>
+                <li>Televisor</li>
+                <li>Ar condicionado</li>
+                <li>Sofá-cama</li>
+            </ul>
+            <div class="apt-card-actions">
+                <a class="btn-pub-outline apt-btn-sm" href="#detalhe-t0">Ver detalhes</a>
+                <a class="btn-pub-primary apt-btn-sm" href="{% url 'buscar_apartamentos' %}?tipo=T0">Pré-reservar</a>
+            </div>
+        </article>
+
+        <article class="apt-card-tipologia" id="tipologia-t1" data-tipologia="T1">
+            <header>
+                <h3>T1</h3>
+                <p class="apt-preco">Kz 750.000</p>
+            </header>
+            <p class="apt-card-desc">Um quarto em suíte com sala e cozinha separadas — equilíbrio entre privacidade e convívio.</p>
+            <ul class="apt-amenities">
+                <li>1 quarto em suíte</li>
+                <li>Cozinha</li>
+                <li>Sala de estar com televisor</li>
+                <li>Sofá-cama ou cadeirão transformável em cama</li>
+                <li>Ar condicionado</li>
+                <li>Outros equipamentos</li>
+            </ul>
+            <div class="apt-card-actions">
+                <a class="btn-pub-outline apt-btn-sm" href="#detalhe-t1">Ver detalhes</a>
+                <a class="btn-pub-primary apt-btn-sm" href="{% url 'buscar_apartamentos' %}?tipo=T1">Pré-reservar</a>
+            </div>
+        </article>
+
+        <article class="apt-card-tipologia" id="tipologia-t2" data-tipologia="T2">
+            <header>
+                <h3>T2</h3>
+                <p class="apt-preco">Kz 1.000.000</p>
+            </header>
+            <p class="apt-card-desc">Dois quartos com sala e cozinha — indicado para famílias ou equipas com necessidade de mais espaço.</p>
+            <ul class="apt-amenities">
+                <li>2 quartos</li>
+                <li>Sala</li>
+                <li>Cozinha</li>
+                <li>WC</li>
+                <li>Totalmente equipado</li>
+            </ul>
+            <div class="apt-card-actions">
+                <a class="btn-pub-outline apt-btn-sm" href="#detalhe-t2">Ver detalhes</a>
+                <a class="btn-pub-primary apt-btn-sm" href="{% url 'buscar_apartamentos' %}?tipo=T2">Pré-reservar</a>
+            </div>
+        </article>
+
+        <article class="apt-card-tipologia" id="tipologia-t3" data-tipologia="T3">
+            <header>
+                <h3>T3</h3>
+                <p class="apt-preco">Kz 1.200.000</p>
+            </header>
+            <p class="apt-card-desc">Três quartos com áreas sociais amplas — máxima flexibilidade para grupos ou estadias prolongadas.</p>
+            <ul class="apt-amenities">
+                <li>3 quartos</li>
+                <li>Sala</li>
+                <li>Cozinha</li>
+                <li>WC</li>
+                <li>Totalmente equipado</li>
+            </ul>
+            <div class="apt-card-actions">
+                <a class="btn-pub-outline apt-btn-sm" href="#detalhe-t3">Ver detalhes</a>
+                <a class="btn-pub-primary apt-btn-sm" href="{% url 'buscar_apartamentos' %}?tipo=T3">Pré-reservar</a>
+            </div>
+        </article>
+
+        <article class="apt-card-tipologia apt-card-tipologia--featured" id="tipologia-penthouse" data-tipologia="PENTHOUSE">
+            <header>
+                <h3>Penthouse / Master</h3>
+                <p class="apt-preco">Kz 2.000.000</p>
+            </header>
+            <p class="apt-card-desc">Unidade de topo no 6.º andar: quatro suítes, sala generosa e terraço privativo de grande dimensão.</p>
+            <ul class="apt-amenities">
+                <li>4 quartos em suíte</li>
+                <li>Sala de estar grande</li>
+                <li>Cozinha</li>
+                <li>Terraço / quintal grande (aprox. 10 m × 15 m)</li>
+            </ul>
+            <div class="apt-card-actions">
+                <a class="btn-pub-outline apt-btn-sm" href="#detalhe-penthouse">Ver detalhes</a>
+                <a class="btn-pub-primary apt-btn-sm" href="{% url 'buscar_apartamentos' %}?tipo=PENTHOUSE">Pré-reservar</a>
+            </div>
+        </article>
+    </div>
+</section>
+
+<section class="pub-section apt-section apt-detalhes" aria-label="Detalhes por tipologia">
+    <h2 class="apt-sr-only">Detalhes das tipologias</h2>
+    <article class="apt-detalhe-block" id="detalhe-t0">
+        <h3>T0 — estúdio</h3>
+        <p>Concentra dormir, refeições ligeiras e estar num único espaço bem resolvido, com kitchenette e climatização.</p>
+    </article>
+    <article class="apt-detalhe-block" id="detalhe-t1">
+        <h3>T1 — um quarto</h3>
+        <p>Separação clara entre zona de dormir (suíte) e áreas sociais, com cozinha equipada para refeições completas.</p>
+    </article>
+    <article class="apt-detalhe-block" id="detalhe-t2">
+        <h3>T2 — dois quartos</h3>
+        <p>Distribuição familiar ou profissional, com cozinha e sala para convívio e trabalho à distância.</p>
+    </article>
+    <article class="apt-detalhe-block" id="detalhe-t3">
+        <h3>T3 — três quartos</h3>
+        <p>Capacidade superior para grupos, com todas as divisões equipadas para estadia autónoma.</p>
+    </article>
+    <article class="apt-detalhe-block" id="detalhe-penthouse">
+        <h3>Penthouse / Master</h3>
+        <p>Experiência premium no último piso, com terraço amplo para exterior privado e vistas privilegiadas sobre a envolvente.</p>
+    </article>
+</section>
+
+<section class="pub-section apt-section" id="distribuicao-pisos">
+    <h2>Distribuição por piso</h2>
+    <p class="apt-lead apt-lead-tight">
+        O rés do chão é dedicado a operações e serviços partilhados. Dos 1.º ao 5.º andar encontram-se as tipologias T0 a T3; o 6.º andar acolhe a penthouse exclusiva.
+    </p>
+    <p class="apt-nota-inventario">
+        <strong>Nota de consistência:</strong> no 1.º andar consideram-se <strong>6 apartamentos</strong> (3× T1, 2× T0, 1× T3), alinhando a soma das tipologias com o inventário validado.
+    </p>
+
+    <div class="apt-floors">
+        <div class="apt-floor apt-floor--operacional">
+            <h3>Rés do chão</h3>
+            <p class="apt-floor-meta">Operacional — sem unidades habitacionais listadas</p>
+            <ul>
+                <li>Receção do edifício</li>
+                <li>Área de lavandaria</li>
+                <li>Restaurante com esplanada</li>
+                <li>Piscina na área da esplanada</li>
+                <li>Cozinha central de apoio ao restaurante</li>
+                <li>Área de serviços de apoio aos trabalhadores</li>
+                <li>Gabinete do administrador</li>
+                <li>Secretaria</li>
+            </ul>
+        </div>
+        <div class="apt-floor" data-piso="1">
+            <h3>1.º andar</h3>
+            <p class="apt-floor-meta">6 apartamentos</p>
+            <ul>
+                <li>3 apartamentos T1</li>
+                <li>2 apartamentos T0</li>
+                <li>1 apartamento T3</li>
+            </ul>
+        </div>
+        <div class="apt-floor" data-piso="2">
+            <h3>2.º andar</h3>
+            <p class="apt-floor-meta">5 apartamentos</p>
+            <ul>
+                <li>2 apartamentos T1</li>
+                <li>2 apartamentos T0</li>
+                <li>1 apartamento T3</li>
+            </ul>
+        </div>
+        <div class="apt-floor" data-piso="3">
+            <h3>3.º andar</h3>
+            <p class="apt-floor-meta">7 apartamentos</p>
+            <ul>
+                <li>3 apartamentos T1</li>
+                <li>2 apartamentos T0</li>
+                <li>2 apartamentos T2</li>
+            </ul>
+        </div>
+        <div class="apt-floor" data-piso="4">
+            <h3>4.º andar</h3>
+            <p class="apt-floor-meta">9 apartamentos</p>
+            <ul>
+                <li>6 apartamentos T1</li>
+                <li>2 apartamentos T0</li>
+                <li>1 apartamento T2</li>
+            </ul>
+        </div>
+        <div class="apt-floor" data-piso="5">
+            <h3>5.º andar</h3>
+            <p class="apt-floor-meta">8 apartamentos</p>
+            <ul>
+                <li>6 apartamentos T1</li>
+                <li>2 apartamentos T0</li>
+            </ul>
+        </div>
+        <div class="apt-floor apt-floor--topo" data-piso="6">
+            <h3>6.º andar</h3>
+            <p class="apt-floor-meta">1 apartamento exclusivo</p>
+            <ul>
+                <li>1 apartamento master / penthouse</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="pub-section apt-section">
+    <h2>O que está incluído</h2>
+    <div class="apt-incluido">
+        <ul>
+            <li>Ar condicionado</li>
+            <li>Televisor (nas tipologias indicadas)</li>
+            <li>Cozinha ou kitchenette consoante a tipologia</li>
+            <li>WC equipado</li>
+            <li>Mobiliário completo</li>
+            <li>Sofá-cama nos T0 e T1</li>
+        </ul>
+    </div>
+</section>
+
+<section class="pub-section apt-section" id="como-reserva-apartamentos">
+    <h2>Como funciona a reserva</h2>
+    <ol class="apt-reserva-steps">
+        <li>Selecionar a tipologia pretendida.</li>
+        <li>Verificar disponibilidade (calendário integrado em fase de ligação).</li>
+        <li>Preencher a pré-reserva com dados de contacto (sem criar password nesta etapa).</li>
+        <li>Efetuar pagamento com a referência gerada ou aguardar validação administrativa.</li>
+        <li>Receber confirmação por email ou notificação no portal.</li>
+        <li>Após confirmação, aceder à área reservada; os serviços ficam disponíveis a partir do primeiro dia da estadia.</li>
+    </ol>
+    <div class="pub-alert apt-alert-strong">
+        A reserva só é ativada após pagamento confirmado ou validação da administração.
+    </div>
+    <div class="pub-alert apt-alert-strong apt-alert-servicos">
+        Os serviços do portal ficam disponíveis a partir do primeiro dia da estadia.
+    </div>
+    <p class="apt-seguranca-publica">
+        A visualização desta página é pública. A conta com password só é ativada após confirmação da reserva, mantendo separado o portal informativo da área operacional reservada.
+    </p>
+</section>
+
+<section class="pub-section apt-section apt-cta-final" id="pre-reserva">
+    <h2>Pré-reserva</h2>
+    <p class="apt-lead">
+        Escolha o apartamento e indique as datas — após a validação da reserva, a receção ativa o seu acesso de cliente.
+    </p>
+    <div class="pub-actions">
+        <a class="btn-pub-primary" href="{% url 'buscar_apartamentos' %}">Iniciar pré-reserva</a>
+        <a class="btn-pub-outline" href="{% url 'usuarios:entrar' %}">Entrar</a>
+        <a class="btn-pub-outline" href="{% url 'site_publico:contactos' %}">Contactar receção</a>
+    </div>
+</section>
+
+{% endblock %}

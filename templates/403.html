@@ -1,0 +1,19 @@
+{% extends "base_public.html" %}
+
+{% block title %}Acesso restrito{% endblock %}
+
+{% block content %}
+<section class="pub-section" style="max-width: 760px;">
+    <h1>Área restrita</h1>
+    <div class="pub-alert">
+        Acesso restrito. Esta área é reservada a trabalhadores autorizados e à administração do sistema.
+    </div>
+    <p style="margin-top:1rem;">
+        Não tem permissão para aceder a esta área. Use a Área do Cliente ou contacte a administração.
+    </p>
+    <div class="pub-actions">
+        <a class="btn-pub-primary" href="{% url 'usuarios:login_cliente' %}">Área do cliente</a>
+        <a class="btn-pub-outline" href="{% url 'usuarios:acesso_interno' %}">Acesso interno</a>
+    </div>
+</section>
+{% endblock %}

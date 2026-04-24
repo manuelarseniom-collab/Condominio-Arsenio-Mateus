@@ -1,0 +1,28 @@
+{% extends "base_app.html" %}
+{% block title %}Admin Operacional{% endblock %}
+{% block content %}
+<h1>Painel administrativo operacional</h1>
+<section class="card">
+    <form method="get">
+        <input type="text" name="q" value="{{ q }}" placeholder="Cliente, apartamento ou servico">
+        <button type="submit">Pesquisar</button>
+    </form>
+</section>
+<section class="card">
+    <table>
+        <thead><tr><th>Cliente</th><th>Servico</th><th>Estado</th><th>Reserva</th></tr></thead>
+        <tbody>
+            {% for s in solicitacoes %}
+            <tr>
+                <td>{{ s.reserva.cliente.nome }}</td>
+                <td>{{ s.servico.nome }}</td>
+                <td>{{ s.get_status_display }}</td>
+                <td>#{{ s.reserva_id }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">Sem registos.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

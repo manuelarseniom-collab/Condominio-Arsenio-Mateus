@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestao | Arsenio Mateus{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="app-body">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="brand">
+                <h2>ARSENIO</h2>
+                <p>MATEUS</p>
+            </div>
+            <nav>
+                <a href="{% url 'dashboard:home' %}">Dashboard</a>
+                {% if is_admin %}
+                <a href="{% url 'reservas:lista' %}">Reservas</a>
+                <a href="{% url 'clientes:lista' %}">Clientes</a>
+                <a href="{% url 'unidades:lista' %}">Apartamentos</a>
+                <a href="{% url 'reservas:lista' %}">Histórico de reservas</a>
+                <a href="{% url 'reservas:lista' %}">Check-in / Check-out</a>
+                <a href="{% url 'faturacao:lista' %}">Pagamentos</a>
+                <a href="{% url 'operacoes:painel_admin' %}">Serviços</a>
+                <a href="{% url 'relatorios:lista' %}">Relatórios</a>
+                <a href="/admin/auth/user/">Trabalhadores</a>
+                <a href="/admin/">Configurações</a>
+                {% elif is_interno %}
+                <a href="{% url 'reservas:lista' %}">Reservas</a>
+                <a href="{% url 'operacoes:painel_admin' %}">Serviços solicitados</a>
+                <a href="{% url 'clientes:lista' %}">Clientes</a>
+                <a href="{% url 'buscar_apartamentos' %}">Disponibilidade</a>
+                <a href="{% url 'buscar_apartamentos' %}">Nova reserva assistida</a>
+                <a href="{% url 'reservas:lista' %}">Check-in / Check-out</a>
+                <a href="{% url 'relatorios:lista' %}">Relatórios</a>
+                {% endif %}
+                <a href="{% url 'site_publico:home' %}">Site publico</a>
+                {% if request.user.is_authenticated %}
+                <a href="{% url 'portal_cliente:home' %}">Portal cliente</a>
+                {% endif %}
+            </nav>
+        </aside>
+        <div class="main-area">
+            <header class="topbar">
+                <div>
+                    <strong>Painel operacional</strong>
+                </div>
+                <div class="topbar-actions">
+                    {% if request.user.is_authenticated %}
+                        <span>{{ request.user.username }}</span>
+                        <form method="post" action="{% url 'usuarios:logout' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-link secondary">Sair</button>
+                        </form>
+                    {% else %}
+                        <a class="btn-link" href="{% url 'usuarios:login' %}">Login</a>
+                    {% endif %}
+                </div>
+            </header>
+            <main class="content">
+                {% if messages %}
+                    {% for message in messages %}
+                    <section class="card"><p>{{ message }}</p></section>
+                    {% endfor %}
+                {% endif %}
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

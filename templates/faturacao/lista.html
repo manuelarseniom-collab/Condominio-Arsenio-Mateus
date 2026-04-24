@@ -1,0 +1,23 @@
+{% extends "base_app.html" %}
+{% block title %}Faturacao{% endblock %}
+{% block content %}
+<h1>Faturas</h1>
+<section class="card">
+    <table class="data-table">
+        <thead><tr><th>ID</th><th>Reserva</th><th>Cliente</th><th>Total</th><th>Estado</th></tr></thead>
+        <tbody>
+        {% for f in faturas %}
+            <tr>
+                <td>{{ f.id }}</td>
+                <td>#{{ f.reserva_id }}</td>
+                <td>{{ f.reserva.cliente.nome }}</td>
+                <td>{{ f.total }}</td>
+                <td>{{ f.get_status_display }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5">Sem faturas.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

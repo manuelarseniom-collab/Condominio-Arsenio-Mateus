@@ -1,0 +1,9 @@
+{% extends "base_public.html" %}
+{% block title %}Acesso restrito{% endblock %}
+{% block content %}
+<section class="pub-section">
+    <h1>Acesso pendente</h1>
+    <p>A tua area reservada sera liberada quando a reserva estiver confirmada/ativa.</p>
+    <a class="btn-pub-primary" href="{% url 'site_publico:home' %}">Voltar ao site</a>
+</section>
+{% endblock %}

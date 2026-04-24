@@ -1,0 +1,26 @@
+{% extends "base_app.html" %}
+{% block title %}Serviço de limpeza{% endblock %}
+{% block content %}
+<h1>Limpeza</h1>
+<section class="card">
+    <p><strong>Reserva:</strong> {{ reserva.unidade.codigo }} ({{ reserva.data_inicio }} a {{ reserva.data_fim }})</p>
+    <p><strong>Preço por dia:</strong> Kz {{ preco_diaria }}</p>
+</section>
+<section class="card">
+    <form method="post">
+        {% csrf_token %}
+        <label>Número de dias</label><br>
+        <input type="number" name="dias" min="1" value="{{ dias }}"><br><br>
+
+        <label>Data de início</label><br>
+        <input type="date" name="data_inicio" value="{{ data_inicio|date:'Y-m-d' }}"><br><br>
+
+        <label>Observações (opcional)</label><br>
+        <textarea name="observacoes" rows="3">{{ observacoes }}</textarea><br><br>
+
+        <p><strong>Total estimado:</strong> Kz {{ total_estimado }}</p>
+        <button class="btn-primary" type="submit">Confirmar solicitação</button>
+        <a class="btn-link secondary" href="{% url 'portal_cliente:servicos' %}">Voltar</a>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base_app.html" %}
+{% block title %}Portal do cliente{% endblock %}
+{% block content %}
+<h1>Ola, {{ cliente.nome }}</h1>
+<section class="card">
+    <p>Gestao das suas reservas, servicos e faturas.</p>
+    <p>Serviços disponíveis na área do cliente: <strong>Limpeza</strong>, <strong>Lavandaria</strong> e <strong>Restaurante</strong> (após check-in).</p>
+    <div class="grid">
+        <a class="btn-link secondary" href="{% url 'portal_cliente:reservas' %}">Minhas reservas</a>
+        <a class="btn-link secondary" href="{% url 'portal_cliente:faturas' %}">Minhas faturas</a>
+        <a class="btn-link secondary" href="{% url 'portal_cliente:servicos' %}">Servicos</a>
+    </div>
+</section>
+{% endblock %}

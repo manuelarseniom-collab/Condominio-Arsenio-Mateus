@@ -1,0 +1,36 @@
+{% extends "base_app.html" %}
+{% block title %}Painel do trabalhador{% endblock %}
+{% block content %}
+<h1>Painel do trabalhador - {{ area|title }}</h1>
+<section class="card">
+    <form method="get" style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+        <input type="text" name="apartamento" placeholder="Apartamento" value="{{ apartamento|default:'' }}">
+        <select name="estado">
+            <option value="">Todos os estados</option>
+            <option value="solicitado">Solicitado</option>
+            <option value="atribuido">Atribuido</option>
+            <option value="em_execucao">Em execucao</option>
+            <option value="concluido">Concluido</option>
+            <option value="cancelado">Cancelado</option>
+        </select>
+        <button type="submit">Filtrar</button>
+    </form>
+</section>
+<section class="card">
+    <table>
+        <thead><tr><th>Servico</th><th>Apartamento</th><th>Estado</th><th>Data alvo</th></tr></thead>
+        <tbody>
+            {% for t in tarefas %}
+            <tr>
+                <td>{{ t.solicitacao.servico.nome }}</td>
+                <td>{{ t.solicitacao.reserva.unidade.codigo }}</td>
+                <td>{{ t.solicitacao.get_status_display }}</td>
+                <td>{{ t.data_alvo|date:"d/m/Y"|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">Sem tarefas.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

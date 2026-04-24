@@ -1,0 +1,138 @@
+:root {
+    --bg: #0b1020;
+    --sidebar: #0f172a;
+    --panel: #111827;
+    --surface: #1f2937;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --primary: #2563eb;
+    --border: #243247;
+    --danger: #ef4444;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.layout {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 250px 1fr;
+}
+
+.sidebar {
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+}
+
+.brand h2 {
+    margin: 0;
+    letter-spacing: 1px;
+}
+
+.brand p {
+    margin: 0 0 1.5rem;
+    color: var(--muted);
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sidebar nav a {
+    color: var(--text);
+    text-decoration: none;
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.5rem;
+}
+
+.sidebar nav a:hover {
+    background: #1e293b;
+}
+
+.main-area {
+    display: grid;
+    grid-template-rows: 64px 1fr;
+}
+
+.topbar {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1.2rem;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.content {
+    padding: 1.2rem;
+}
+
+.card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.kpi {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0.2rem 0 0;
+}
+
+.btn-primary,
+.btn-link {
+    background: var(--primary);
+    color: #fff;
+    text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.login-card {
+    max-width: 420px;
+}
+
+.login-card form {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.login-card input {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem;
+}
+
+.error-text {
+    color: var(--danger);
+}

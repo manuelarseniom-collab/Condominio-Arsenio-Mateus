@@ -1,0 +1,186 @@
+{% extends "base_app.html" %}
+
+{% block title %}Dashboard | Condominio{% endblock %}
+
+{% block content %}
+<h1>Painel operacional</h1>
+<section class="card">
+    <p><strong>Perfil atual:</strong> {{ perfil_atual_label }}</p>
+    {% if is_admin %}
+    <p>Painel administrativo com gestão de clientes, trabalhadores, reservas e financeiro.</p>
+    {% elif is_interno %}
+    <p>Área interna do trabalhador para apoio operacional, reservas e validações financeiras.</p>
+    {% endif %}
+</section>
+<div class="grid">
+    <article class="card">
+        <h3>Reservas pendentes</h3>
+        <p class="kpi">{{ reservas_pendentes }}</p>
+        <a class="btn-link secondary" href="{% url 'reservas:lista' %}">Abrir reservas</a>
+    </article>
+    <article class="card">
+        <h3>Reservas confirmadas</h3>
+        <p class="kpi">{{ reservas_confirmadas }}</p>
+        <a class="btn-link secondary" href="{% url 'reservas:lista' %}">Ver confirmadas</a>
+    </article>
+    <article class="card">
+        <h3>Serviços em aberto</h3>
+        <p class="kpi">{{ servicos_abertos }}</p>
+        {% if is_admin or is_rececao %}
+        <a class="btn-link secondary" href="{% url 'operacoes:painel_admin' %}">Painel de serviços</a>
+        {% else %}
+        <a class="btn-link secondary" href="{% url 'operacoes:painel_staff' %}">Minhas tarefas operacionais</a>
+        {% endif %}
+    </article>
+    <article class="card">
+        <h3>Atividade do dia</h3>
+        <p class="kpi">{{ atividade_hoje }}</p>
+        <p>Pedidos operacionais criados hoje.</p>
+    </article>
+    <article class="card">
+        <h3>Serviços concluídos</h3>
+        <p class="kpi">{{ servicos_concluidos }}</p>
+        <p>Total acumulado de solicitações concluídas.</p>
+    </article>
+    <article class="card">
+        <h3>Pedidos urgentes</h3>
+        <p class="kpi">{{ pedidos_urgentes }}</p>
+        <p>Solicitações em aberto há mais de 24h.</p>
+    </article>
+</div>
+<div class="grid">
+    <article class="card">
+        <h3>Financeiro por pagar</h3>
+        <p class="kpi">{{ financeiro_por_pagar }}</p>
+    </article>
+    <article class="card">
+        <h3>Financeiro em validação</h3>
+        <p class="kpi">{{ financeiro_validacao }}</p>
+    </article>
+    <article class="card">
+        <h3>Financeiro pago</h3>
+        <p class="kpi">{{ financeiro_pago }}</p>
+    </article>
+    <article class="card">
+        <h3>Clientes ativos</h3>
+        <p class="kpi">{{ clientes_ativos }}</p>
+    </article>
+</div>
+
+{% if is_interno %}
+<section class="card">
+    <h3>Confirmação financeira (WhatsApp)</h3>
+    <table class="data-table">
+        <thead><tr><th>Reserva</th><th>Cliente</th><th>Unidade</th><th>Pagamento confirmado por WhatsApp?</th><th>Ação</th></tr></thead>
+        <tbody>
+            {% for r in reservas_whatsapp_pendentes %}
+            <tr>
+                <td>#{{ r.id }}</td>
+                <td>{{ r.cliente.nome }}</td>
+                <td>{{ r.unidade.codigo }}</td>
+                <td>Não</td>
+                <td>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="reserva_id" value="{{ r.id }}">
+                        <input type="hidden" name="confirmar_whatsapp" value="1">
+                        <button type="submit">Marcar Sim</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">Sem reservas pendentes de confirmação por WhatsApp.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h3>Clientes</h3>
+    <table class="data-table">
+        <thead><tr><th>ID</th><th>Nome</th><th>Estado</th><th>Situação financeira</th></tr></thead>
+        <tbody>
+            {% for c in clientes_lista %}
+            <tr>
+                <td>{{ c.id }}</td>
+                <td>{{ c.nome }}</td>
+                <td>{{ c.get_estado_display }}</td>
+                <td>{{ c.get_situacao_financeira_display }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">Sem clientes.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h3>Reservas ativas</h3>
+    <table class="data-table">
+        <thead><tr><th>ID</th><th>Cliente</th><th>Unidade</th><th>Estado</th></tr></thead>
+        <tbody>
+            {% for r in reservas_ativas_lista %}
+            <tr><td>#{{ r.id }}</td><td>{{ r.cliente.nome }}</td><td>{{ r.unidade.codigo }}</td><td>{{ r.get_status_display }}</td></tr>
+            {% empty %}
+            <tr><td colspan="4">Sem reservas ativas.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h3>Reservas pendentes</h3>
+    <table class="data-table">
+        <thead><tr><th>ID</th><th>Cliente</th><th>Unidade</th><th>Estado</th></tr></thead>
+        <tbody>
+            {% for r in reservas_pendentes_lista %}
+            <tr><td>#{{ r.id }}</td><td>{{ r.cliente.nome }}</td><td>{{ r.unidade.codigo }}</td><td>{{ r.get_status_display }}</td></tr>
+            {% empty %}
+            <tr><td colspan="4">Sem reservas pendentes.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+{% if is_admin %}
+<section class="card">
+    <h3>Painel administrativo</h3>
+    <p>
+        Gestão de clientes e trabalhadores, reservas (confirmar/cancelar), atualização de situação financeira
+        e visão completa de reservas ativas, pendentes, canceladas e concluídas.
+    </p>
+    <p>
+        <a class="btn-link secondary" href="{% url 'clientes:lista' %}">Gestão de clientes</a>
+        <a class="btn-link secondary" href="{% url 'reservas:lista' %}">Gestão de reservas</a>
+        <a class="btn-link secondary" href="{% url 'faturacao:lista' %}">Situação financeira</a>
+        <a class="btn-link secondary" href="/admin/auth/user/">Gestão de trabalhadores</a>
+    </p>
+    <p>
+        Ativas: {{ reservas_por_estado.ativas }} |
+        Pendentes: {{ reservas_por_estado.pendentes }} |
+        Canceladas: {{ reservas_por_estado.canceladas }} |
+        Concluídas: {{ reservas_por_estado.concluidas }}
+    </p>
+</section>
+{% endif %}
+
+<section class="card">
+    <h3>Atividade recente</h3>
+    <table class="data-table">
+        <thead><tr><th>Data</th><th>Serviço</th><th>Apartamento</th><th>Estado</th></tr></thead>
+        <tbody>
+            {% for a in atividade_recente %}
+            <tr>
+                <td>{{ a.criado_em|date:"d/m/Y H:i" }}</td>
+                <td>{{ a.servico.nome }}</td>
+                <td>{{ a.reserva.unidade.codigo }}</td>
+                <td>{{ a.get_status_display }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">Sem atividade recente.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

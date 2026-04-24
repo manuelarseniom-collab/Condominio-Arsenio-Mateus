@@ -1,0 +1,27 @@
+{% extends "base_public.html" %}
+
+{% block title %}Entrar | Arsenio Mateus{% endblock %}
+
+{% block content %}
+<section class="pub-section" style="max-width: 900px;">
+    <h1>Acessos do portal</h1>
+    <p style="color: var(--pub-muted);">Cada perfil tem uma área própria: cliente, trabalhador e administrador.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;">
+        <article class="pub-card body">
+            <h3>Área do cliente</h3>
+            <p>Acesso reservado para clientes com reserva confirmada e conta ativada.</p>
+            <a class="btn-pub-primary" href="{% url 'usuarios:login_cliente' %}">Entrar como cliente</a>
+        </article>
+        <article class="pub-card body">
+            <h3>Área do trabalhador</h3>
+            <p>Acesso interno para receção e operadores com credenciais atribuídas pela administração.</p>
+            <a class="btn-pub-outline" href="{% url 'usuarios:login_staff' %}">Entrar como trabalhador</a>
+        </article>
+        <article class="pub-card body">
+            <h3>Administração</h3>
+            <p>Acesso de gestão total para administração do sistema e do condomínio.</p>
+            <a class="btn-pub-outline" href="{% url 'usuarios:login_admin' %}">Entrar como administrador</a>
+        </article>
+    </div>
+</section>
+{% endblock %}
