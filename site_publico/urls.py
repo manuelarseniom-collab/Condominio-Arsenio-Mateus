@@ -1,5 +1,6 @@
 from django.urls import path
 
+from depoimentos import views as depoimentos_views
 from . import views
 from .pre_reserva_views import (
     pre_reserva_conta,
@@ -23,5 +24,7 @@ urlpatterns = [
     path("restaurante/", views.restaurante, name="restaurante"),
     path("contactos/", views.contactos, name="contactos"),
     path("faq/", views.faq, name="faq"),
-    path("depoimentos/", views.depoimentos, name="depoimentos"),
+    path("depoimentos/", depoimentos_views.depoimentos_publicos, name="depoimentos"),
+    path("depoimentos/novo/", depoimentos_views.criar_depoimento, name="criar_depoimento"),
+    path("painel-admin/depoimentos/", depoimentos_views.admin_depoimentos, name="admin_depoimentos"),
 ]

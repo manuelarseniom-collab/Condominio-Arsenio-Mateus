@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "unidades",
     "faturacao",
     "reservas",
+    "depoimentos",
     "limpeza",
     "lavandaria",
     "restaurante",

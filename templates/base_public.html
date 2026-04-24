@@ -28,6 +28,7 @@
             <a href="{% url 'site_publico:home' %}">Início</a>
             <a href="{% url 'portal_cliente:reservas' %}">Minhas reservas</a>
             <a href="{% url 'portal_cliente:faturas' %}">Meus pagamentos</a>
+            <a href="{% url 'site_publico:depoimentos' %}">Depoimentos</a>
             <a href="{% url 'portal_cliente:home' %}">Perfil</a>
             <form method="post" action="{% url 'usuarios:logout' %}" style="display:inline;">
                 {% csrf_token %}
@@ -38,6 +39,7 @@
             <a href="{% url 'clientes:lista' %}">Clientes</a>
             <a href="{% url 'reservas:lista' %}">Reservas ativas</a>
             <a href="{% url 'reservas:lista' %}">Reservas pendentes</a>
+            <a href="{% url 'site_publico:depoimentos' %}">Depoimentos</a>
             <a href="{% url 'faturacao:lista' %}">Pagamentos</a>
             <form method="post" action="{% url 'usuarios:logout' %}" style="display:inline;">
                 {% csrf_token %}
@@ -48,6 +50,7 @@
             <a href="{% url 'clientes:lista' %}">Clientes</a>
             <a href="/admin/auth/user/">Trabalhadores</a>
             <a href="{% url 'reservas:lista' %}">Reservas</a>
+            <a href="{% url 'site_publico:admin_depoimentos' %}">Depoimentos</a>
             <a href="{% url 'faturacao:lista' %}">Financeiro</a>
             <a href="{% url 'relatorios:lista' %}">Relatórios</a>
             <a href="/admin/">Configurações</a>

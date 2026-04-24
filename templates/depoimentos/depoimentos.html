@@ -1,0 +1,36 @@
+{% extends "base_public.html" %}
+{% block title %}Avaliações e depoimentos{% endblock %}
+{% block content %}
+<section class="pub-section">
+    <h1>Avaliações e depoimentos</h1>
+    <p>Veja opiniões reais de clientes com estadias ativas ou concluídas.</p>
+    <div style="margin: 1rem 0 1.5rem;">
+        {% if user.is_authenticated %}
+            <a href="{% url 'site_publico:criar_depoimento' %}" class="btn-pub-primary">Deixar avaliação</a>
+        {% else %}
+            <a href="{% url 'usuarios:login_cliente' %}" class="btn-pub-primary">Deixar avaliação</a>
+            <p style="margin-top:0.5rem;">Para deixar um depoimento, é necessário ter uma reserva ativa ou concluída.</p>
+        {% endif %}
+    </div>
+
+    <div class="pub-grid">
+        {% for depoimento in depoimentos %}
+            <article class="pub-card body">
+                <h3>{{ depoimento.titulo }}</h3>
+                <p>
+                    {% for _ in "12345" %}
+                        {% if forloop.counter <= depoimento.avaliacao %}★{% else %}☆{% endif %}
+                    {% endfor %}
+                </p>
+                <p>{{ depoimento.comentario }}</p>
+                <small>Por {{ depoimento.user.username }} em {{ depoimento.criado_em|date:"d/m/Y" }}</small>
+            </article>
+        {% empty %}
+            <article class="pub-card body">
+                <h3>Sem depoimentos publicados</h3>
+                <p>Os primeiros depoimentos aprovados aparecerão aqui.</p>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

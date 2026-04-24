@@ -1,0 +1,67 @@
+{% extends "base_public.html" %}
+{% block title %}Administração de depoimentos{% endblock %}
+{% block content %}
+<section class="pub-section">
+    <h1>Gestão de depoimentos</h1>
+    <p>Pendentes, aprovados, rejeitados, ocultos e abusivos.</p>
+    <div class="pub-card body" style="margin-bottom: 1rem;">
+        <p><strong>Total:</strong> {{ totais.total }} | <strong>Pendentes:</strong> {{ totais.pendentes }} | <strong>Aprovados:</strong> {{ totais.aprovados }}</p>
+        <p><strong>Rejeitados:</strong> {{ totais.rejeitados }} | <strong>Ocultos:</strong> {{ totais.ocultos }} | <strong>Abusivos:</strong> {{ totais.abusivos }}</p>
+    </div>
+    <form method="get" class="pub-card body" style="margin-bottom: 1rem;">
+        <p>
+            <label for="id_status"><strong>Status:</strong></label>
+            <select id="id_status" name="status" class="form-select">
+                <option value="">Todos</option>
+                <option value="pendente" {% if filtro_status == "pendente" %}selected{% endif %}>Pendente</option>
+                <option value="aprovado" {% if filtro_status == "aprovado" %}selected{% endif %}>Aprovado</option>
+                <option value="rejeitado" {% if filtro_status == "rejeitado" %}selected{% endif %}>Rejeitado</option>
+                <option value="oculto" {% if filtro_status == "oculto" %}selected{% endif %}>Oculto</option>
+            </select>
+        </p>
+        <p>
+            <label for="id_abusivo"><strong>Abusivo:</strong></label>
+            <select id="id_abusivo" name="abusivo" class="form-select">
+                <option value="">Todos</option>
+                <option value="sim" {% if filtro_abusivo == "sim" %}selected{% endif %}>Sim</option>
+                <option value="nao" {% if filtro_abusivo == "nao" %}selected{% endif %}>Não</option>
+            </select>
+        </p>
+        <button class="btn-pub-primary" type="submit">Filtrar</button>
+        <a class="btn-pub-outline" href="{% url 'site_publico:admin_depoimentos' %}">Limpar</a>
+    </form>
+
+    <div class="pub-grid">
+        {% for depoimento in depoimentos %}
+            <article class="pub-card body">
+                <h3>{{ depoimento.titulo }}</h3>
+                <p><strong>Utilizador:</strong> {{ depoimento.user.username }}</p>
+                <p><strong>Reserva:</strong> {% if depoimento.reserva %}#{{ depoimento.reserva.id }}{% else %}-{% endif %}</p>
+                <p><strong>Avaliação:</strong> {{ depoimento.avaliacao }}/5</p>
+                <p><strong>Status:</strong> {{ depoimento.get_status_display }}</p>
+                <p><strong>Publicado:</strong> {{ depoimento.publicado|yesno:"Sim,Não" }}</p>
+                <p><strong>Abusivo:</strong> {{ depoimento.abusivo|yesno:"Sim,Não" }}</p>
+                <p>{{ depoimento.comentario }}</p>
+                {% if depoimento.motivo_moderacao %}
+                    <p><strong>Motivo:</strong> {{ depoimento.motivo_moderacao }}</p>
+                {% endif %}
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="depoimento_id" value="{{ depoimento.id }}">
+                    <p><textarea name="motivo_moderacao" rows="2" class="form-control" placeholder="Motivo de moderação (opcional)"></textarea></p>
+                    <button class="btn-pub-outline" name="acao" value="aprovar" type="submit">Aprovar</button>
+                    <button class="btn-pub-outline" name="acao" value="rejeitar" type="submit">Rejeitar</button>
+                    <button class="btn-pub-outline" name="acao" value="ocultar" type="submit">Ocultar</button>
+                    <button class="btn-pub-outline" name="acao" value="abusivo" type="submit">Marcar abusivo</button>
+                    <button class="btn-pub-outline" name="acao" value="apagar" type="submit">Apagar</button>
+                </form>
+            </article>
+        {% empty %}
+            <article class="pub-card body">
+                <h3>Sem depoimentos registados</h3>
+                <p>Nenhum depoimento foi criado até ao momento.</p>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

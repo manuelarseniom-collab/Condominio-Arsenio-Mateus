@@ -1,0 +1,13 @@
+{% extends "base_public.html" %}
+{% block title %}Novo depoimento{% endblock %}
+{% block content %}
+<section class="pub-section">
+    <h1>Deixar avaliação</h1>
+    <p>Depoimento associado à reserva #{{ reserva.id }} ({{ reserva.status }}).</p>
+    <form method="post" class="pub-card body" style="max-width: 760px;">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn-pub-primary">Enviar depoimento</button>
+    </form>
+</section>
+{% endblock %}
