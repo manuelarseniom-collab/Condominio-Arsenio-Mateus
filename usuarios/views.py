@@ -6,6 +6,7 @@ from django.views.decorators.cache import never_cache
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 
+from usuarios.forms import SecureAuthenticationForm
 from usuarios.models import PerfilAcesso
 
 
@@ -13,6 +14,7 @@ from usuarios.models import PerfilAcesso
 class UsuarioLoginView(LoginView):
     template_name = "usuarios/login.html"
     redirect_authenticated_user = False
+    authentication_form = SecureAuthenticationForm
 
     def form_valid(self, form):
         # Evita herdar estado de sessão anterior ao trocar de conta/perfil.

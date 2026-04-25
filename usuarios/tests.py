@@ -113,7 +113,7 @@ class AcessoPorPerfilTests(TestCase):
         user = self._criar_utilizador("workerlogin", PerfilAcesso.RECEPCAO, password="Teste@123")
         response = self.client.post(
             reverse("usuarios:login_cliente"),
-            {"username": user.username, "password": "Teste@123"},
+            {"login_usuario": user.username, "login_senha": "Teste@123"},
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
@@ -123,7 +123,7 @@ class AcessoPorPerfilTests(TestCase):
         self._criar_utilizador("workerperfil", PerfilAcesso.RECEPCAO, password="Teste@123")
         response = self.client.post(
             reverse("usuarios:login_staff"),
-            {"username": "workerperfil", "password": "Teste@123"},
+            {"login_usuario": "workerperfil", "login_senha": "Teste@123"},
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
@@ -134,7 +134,7 @@ class AcessoPorPerfilTests(TestCase):
         self._criar_utilizador("adminperfil", PerfilAcesso.ADMIN, password="Teste@123")
         response = self.client.post(
             reverse("usuarios:login_admin"),
-            {"username": "adminperfil", "password": "Teste@123"},
+            {"login_usuario": "adminperfil", "login_senha": "Teste@123"},
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
@@ -145,7 +145,7 @@ class AcessoPorPerfilTests(TestCase):
         self._criar_utilizador("workerlogout", PerfilAcesso.RECEPCAO, password="Teste@123")
         self.client.post(
             reverse("usuarios:login_staff"),
-            {"username": "workerlogout", "password": "Teste@123"},
+            {"login_usuario": "workerlogout", "login_senha": "Teste@123"},
             follow=True,
         )
         self.client.post(reverse("usuarios:logout"), follow=True)
@@ -159,7 +159,7 @@ class AcessoPorPerfilTests(TestCase):
 
         response_admin = self.client.post(
             reverse("usuarios:login_admin"),
-            {"username": "adminswitch", "password": "Teste@123"},
+            {"login_usuario": "adminswitch", "login_senha": "Teste@123"},
             follow=True,
         )
         self.assertContains(response_admin, "Administrador")
@@ -168,7 +168,7 @@ class AcessoPorPerfilTests(TestCase):
 
         response_worker = self.client.post(
             reverse("usuarios:login_staff"),
-            {"username": "workerswitch", "password": "Teste@123"},
+            {"login_usuario": "workerswitch", "login_senha": "Teste@123"},
             follow=True,
         )
         self.assertContains(response_worker, "Trabalhador")
@@ -178,7 +178,7 @@ class AcessoPorPerfilTests(TestCase):
         self._criar_utilizador("workerrefresh", PerfilAcesso.RECEPCAO, password="Teste@123")
         self.client.post(
             reverse("usuarios:login_staff"),
-            {"username": "workerrefresh", "password": "Teste@123"},
+            {"login_usuario": "workerrefresh", "login_senha": "Teste@123"},
             follow=True,
         )
         primeira = self.client.get(reverse("dashboard:home"))

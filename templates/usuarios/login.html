@@ -9,16 +9,18 @@
     {% if form.errors %}
         <p style="color:#b91c1c;font-weight:600;">Credenciais inválidas. Verifique os dados e tente novamente.</p>
     {% endif %}
-    <form method="post" autocomplete="off" class="pub-card" style="padding:1.25rem;">
+    <form method="post" autocomplete="off" autocapitalize="off" spellcheck="false" class="pub-card" style="padding:1.25rem;">
         {% csrf_token %}
-        <label for="id_username">Utilizador</label>
-        <input id="id_username" type="text" name="username" value="" autocomplete="off" autocapitalize="none" spellcheck="false" required style="width:100%;margin-bottom:0.75rem;padding:0.6rem;border-radius:8px;border:1px solid var(--pub-border);">
+        <label for="login_usuario">Utilizador</label>
+        <input id="login_usuario" type="text" name="login_usuario" value="" autocomplete="new-password" autocapitalize="off" spellcheck="false" required style="width:100%;margin-bottom:0.75rem;padding:0.6rem;border-radius:8px;border:1px solid var(--pub-border);">
 
-        <label for="id_password">Password</label>
-        <input id="id_password" type="password" name="password" value="" autocomplete="new-password" required style="width:100%;margin-bottom:1rem;padding:0.6rem;border-radius:8px;border:1px solid var(--pub-border);">
+        <label for="login_senha">Password</label>
+        <input id="login_senha" type="password" name="login_senha" value="" autocomplete="new-password" required style="width:100%;margin-bottom:1rem;padding:0.6rem;border-radius:8px;border:1px solid var(--pub-border);">
 
         <button type="submit" class="btn-pub-primary" style="width:100%;text-align:center;">Entrar</button>
     </form>
+    <p style="margin-top:0.75rem;color:var(--pub-muted);font-size:0.92rem;">Por segurança, não utilize credenciais guardadas em computadores partilhados.</p>
+    <p style="margin-top:0.4rem;color:var(--pub-muted);font-size:0.9rem;">No Microsoft Edge: Definições &gt; Perfis &gt; Palavras-passe &gt; procurar 127.0.0.1 e apagar credenciais guardadas.</p>
     <p style="margin-top:0.75rem;"><a href="{% url 'usuarios:password_reset' %}">Esqueci a password</a></p>
 </section>
 {% endblock %}
