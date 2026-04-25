@@ -7,15 +7,15 @@
     <h1>{{ area_titulo|default:"Entrar" }}</h1>
     <p style="color: var(--pub-muted);">{{ area_subtitulo|default:"Acesso reservado por credenciais autorizadas." }}</p>
     {% if form.errors %}
-        <p style="color:#b91c1c;font-weight:600;">Credenciais invalidas.</p>
+        <p style="color:#b91c1c;font-weight:600;">Credenciais inválidas. Verifique os dados e tente novamente.</p>
     {% endif %}
-    <form method="post" class="pub-card" style="padding:1.25rem;">
+    <form method="post" autocomplete="off" class="pub-card" style="padding:1.25rem;">
         {% csrf_token %}
         <label for="id_username">Utilizador</label>
-        <input id="id_username" type="text" name="username" required style="width:100%;margin-bottom:0.75rem;padding:0.6rem;border-radius:8px;border:1px solid var(--pub-border);">
+        <input id="id_username" type="text" name="username" value="" autocomplete="off" autocapitalize="none" spellcheck="false" required style="width:100%;margin-bottom:0.75rem;padding:0.6rem;border-radius:8px;border:1px solid var(--pub-border);">
 
         <label for="id_password">Password</label>
-        <input id="id_password" type="password" name="password" required style="width:100%;margin-bottom:1rem;padding:0.6rem;border-radius:8px;border:1px solid var(--pub-border);">
+        <input id="id_password" type="password" name="password" value="" autocomplete="new-password" required style="width:100%;margin-bottom:1rem;padding:0.6rem;border-radius:8px;border:1px solid var(--pub-border);">
 
         <button type="submit" class="btn-pub-primary" style="width:100%;text-align:center;">Entrar</button>
     </form>

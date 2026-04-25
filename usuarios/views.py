@@ -1,12 +1,15 @@
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import logout
 from django.contrib import messages
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 
 from usuarios.models import PerfilAcesso
 
 
+@method_decorator(never_cache, name="dispatch")
 class UsuarioLoginView(LoginView):
     template_name = "usuarios/login.html"
     redirect_authenticated_user = False
@@ -16,6 +19,13 @@ class UsuarioLoginView(LoginView):
         if self.request.user.is_authenticated:
             logout(self.request)
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            "Credenciais inválidas. Verifique os dados e tente novamente.",
+        )
+        return super().form_invalid(form)
 
     def get_success_url(self):
         role = PerfilAcesso.VISITANTE
@@ -37,6 +47,7 @@ class UsuarioLoginView(LoginView):
         return reverse("site_publico:home")
 
 
+@method_decorator(never_cache, name="dispatch")
 class UsuarioLogoutView(LogoutView):
     http_method_names = ["post", "options"]
     next_page = reverse_lazy("site_publico:home")
@@ -122,9 +133,11 @@ class LoginAdminView(UsuarioLoginView):
         return redirect("usuarios:acesso_interno")
 
 
+@never_cache
 def entrar(request):
     return render(request, "usuarios/entrar.html")
 
 
+@never_cache
 def acesso_interno(request):
     return render(request, "usuarios/acesso_interno.html")
