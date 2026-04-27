@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Ticket Cozinha #{{ pedido.id }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 18px; }
+        h2, p { margin: 0 0 8px; }
+        ul { margin: 8px 0; padding-left: 18px; }
+        .small { font-size: 12px; color: #555; }
+        @media print {.no-print { display:none; }}
+    </style>
+</head>
+<body>
+    <button class="no-print" onclick="window.print()">Imprimir</button>
+    <h2>Ticket Cozinha - Pedido #{{ pedido.id }}</h2>
+    <p><strong>Origem:</strong> {{ pedido.get_origem_display }}</p>
+    <p>
+        <strong>Mesa/Quarto:</strong>
+        {% if pedido.mesa_id %}Mesa {{ pedido.mesa.numero }}
+        {% elif pedido.reserva_id %}Quarto {{ pedido.reserva.unidade.codigo }}
+        {% else %}-{% endif %}
+    </p>
+    <p><strong>Cliente:</strong> {% if pedido.reserva_id %}{{ pedido.reserva.cliente.nome }}{% else %}{{ pedido.cliente_nome|default:"-" }}{% endif %}</p>
+    <p><strong>Hora:</strong> {{ pedido.criado_em|date:"d/m/Y H:i" }}</p>
+    <hr>
+    <ul>
+    {% for i in pedido.itens.all %}
+        <li>{{ i.quantidade }}x {{ i.produto.nome }}</li>
+    {% empty %}
+        <li>Sem itens</li>
+    {% endfor %}
+    </ul>
+    <p><strong>Observações:</strong> {{ pedido.observacoes|default:"-" }}</p>
+    <p class="small">Arsénio Mateus - Ticket interno da cozinha</p>
+</body>
+</html>

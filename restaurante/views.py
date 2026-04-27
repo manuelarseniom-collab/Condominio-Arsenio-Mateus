@@ -2,6 +2,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -9,7 +10,14 @@ from django.utils import timezone
 from faturacao.models import Fatura
 from faturacao.services import add_item_fatura, recalcular_total_fatura
 from reservas.models import Reserva
-from restaurante.models import CategoriaProduto, ItemPedidoRestaurante, MesaRestaurante, PedidoRestaurante, ProdutoRestaurante
+from restaurante.models import (
+    CategoriaProduto,
+    ItemPedidoRestaurante,
+    MesaRestaurante,
+    MovimentoEstoqueRestaurante,
+    PedidoRestaurante,
+    ProdutoRestaurante,
+)
 from usuarios.authz import interno_required
 from usuarios.models import PerfilAcesso
 
@@ -32,10 +40,19 @@ def lista(request):
             novo_status = request.POST.get("status")
             pedido = get_object_or_404(PedidoRestaurante, pk=pedido_id)
             if novo_status in {s[0] for s in PedidoRestaurante.STATUS}:
+                if novo_status in {"aceite", "em_preparacao"} and not pedido.estoque_baixado:
+                    ok, erro = _baixar_estoque_pedido(pedido)
+                    if not ok:
+                        messages.error(request, erro)
+                        return redirect("restaurante:lista")
+                    pedido.estoque_baixado = True
+                if novo_status == "cancelado" and pedido.estoque_baixado:
+                    _repor_estoque_pedido(pedido)
+                    pedido.estoque_baixado = False
                 pedido.status = novo_status
                 if novo_status == "pago":
                     pedido.pago_em = timezone.now()
-                pedido.save(update_fields=["status", "pago_em"])
+                pedido.save(update_fields=["status", "pago_em", "estoque_baixado"])
                 messages.success(request, f"Pedido #{pedido.id} atualizado para {pedido.get_status_display()}.")
         elif acao == "gerar_fatura_pedido":
             pedido = get_object_or_404(PedidoRestaurante, pk=request.POST.get("pedido_id"))
@@ -100,7 +117,7 @@ def cozinha(request):
         messages.error(request, "Acesso reservado ao trabalhador do restaurante.")
         return redirect("dashboard:home")
     pedidos = PedidoRestaurante.objects.filter(status__in=["aceite", "em_preparacao", "pronto"]).select_related("mesa", "reserva")
-    return render(request, "restaurante/cozinha.html", {"pedidos": pedidos})
+    return render(request, "restaurante/cozinha.html", {"pedidos": pedidos, "novos_recebidos": PedidoRestaurante.objects.filter(status="recebido").count()})
 
 
 def menu_qr(request, codigo_qr: str):
@@ -160,8 +177,23 @@ def relatorios(request):
         "por_origem": list(qs.values("origem").annotate(total=Count("id")).order_by("origem")),
         "por_mesa": list(qs.exclude(mesa__isnull=True).values("mesa__numero").annotate(total=Count("id")).order_by("mesa__numero")),
         "por_quarto": list(qs.exclude(reserva__isnull=True).values("reserva__unidade__codigo").annotate(total=Count("id")).order_by("reserva__unidade__codigo")),
+        "produtos_mais_vendidos": list(
+            ItemPedidoRestaurante.objects.filter(pedido__in=qs)
+            .values("produto__nome")
+            .annotate(qtd=Sum("quantidade"))
+            .order_by("-qtd")[:10]
+        ),
     }
     return render(request, "restaurante/relatorios.html", {"resumo": resumo, "periodo": periodo})
+
+
+@interno_required
+def ticket_cozinha(request, pedido_id: int):
+    if not _user_pode_operar_restaurante(request.user):
+        messages.error(request, "Acesso reservado ao trabalhador do restaurante.")
+        return redirect("dashboard:home")
+    pedido = get_object_or_404(PedidoRestaurante.objects.select_related("mesa", "reserva"), pk=pedido_id)
+    return render(request, "restaurante/ticket_cozinha.html", {"pedido": pedido})
 
 
 def _user_pode_operar_restaurante(user) -> bool:
@@ -178,15 +210,16 @@ def _user_pode_operar_restaurante(user) -> bool:
 def _criar_pedido_presencial(request):
     mesa_id = request.POST.get("mesa_id")
     mesa = MesaRestaurante.objects.filter(pk=mesa_id).first() if mesa_id else None
-    pedido = PedidoRestaurante.objects.create(
-        origem="presencial",
-        mesa=mesa,
-        status="recebido",
-        cliente_nome=(request.POST.get("cliente_nome") or "").strip(),
-        cliente_telefone=(request.POST.get("cliente_telefone") or "").strip(),
-        metodo_pagamento=(request.POST.get("metodo_pagamento") or "").strip(),
-        observacoes=(request.POST.get("observacoes") or "").strip(),
-    )
+    with transaction.atomic():
+        pedido = PedidoRestaurante.objects.create(
+            origem="presencial",
+            mesa=mesa,
+            status="recebido",
+            cliente_nome=(request.POST.get("cliente_nome") or "").strip(),
+            cliente_telefone=(request.POST.get("cliente_telefone") or "").strip(),
+            metodo_pagamento=(request.POST.get("metodo_pagamento") or "").strip(),
+            observacoes=(request.POST.get("observacoes") or "").strip(),
+        )
     produtos = ProdutoRestaurante.objects.filter(ativo=True, disponivel=True)
     for produto in produtos:
         qtd_raw = request.POST.get(f"qtd_{produto.id}", "0").strip()
@@ -205,6 +238,51 @@ def _criar_pedido_presencial(request):
         mesa.estado = "ocupada"
         mesa.save(update_fields=["estado"])
     return pedido
+
+
+def _baixar_estoque_pedido(pedido):
+    for item in pedido.itens.select_related("produto"):
+        produto = item.produto
+        if not produto.controla_estoque:
+            continue
+        necessario = Decimal(str(item.quantidade))
+        if produto.estoque_atual < necessario:
+            return False, f"Stock insuficiente para {produto.nome}. Disponível: {produto.estoque_atual}."
+    for item in pedido.itens.select_related("produto"):
+        produto = item.produto
+        if not produto.controla_estoque:
+            continue
+        necessario = Decimal(str(item.quantidade))
+        produto.estoque_atual = max(Decimal("0.00"), produto.estoque_atual - necessario)
+        produto.disponivel = produto.estoque_atual > 0
+        produto.save(update_fields=["estoque_atual", "disponivel"])
+        MovimentoEstoqueRestaurante.objects.create(
+            produto=produto,
+            pedido=pedido,
+            tipo="saida",
+            quantidade=necessario,
+            observacao=f"Baixa por pedido #{pedido.id}",
+        )
+    return True, ""
+
+
+def _repor_estoque_pedido(pedido):
+    for item in pedido.itens.select_related("produto"):
+        produto = item.produto
+        if not produto.controla_estoque:
+            continue
+        qtd = Decimal(str(item.quantidade))
+        produto.estoque_atual = produto.estoque_atual + qtd
+        if produto.estoque_atual > 0:
+            produto.disponivel = True
+        produto.save(update_fields=["estoque_atual", "disponivel"])
+        MovimentoEstoqueRestaurante.objects.create(
+            produto=produto,
+            pedido=pedido,
+            tipo="reposicao",
+            quantidade=qtd,
+            observacao=f"Reposição por cancelamento do pedido #{pedido.id}",
+        )
 
 
 def _gerar_fatura_do_pedido(pedido, user):
@@ -285,6 +363,9 @@ def _seed_menu_e_mesas():
                     "preco": preco,
                     "ativo": True,
                     "disponivel": True,
+                    "controla_estoque": True,
+                    "estoque_atual": Decimal("100.00"),
+                    "estoque_minimo": Decimal("10.00"),
                     "tempo_preparo_min": 15,
                 },
             )

@@ -27,6 +27,9 @@ class ProdutoRestaurante(models.Model):
     tempo_preparo_min = models.PositiveSmallIntegerField(default=15)
     ativo = models.BooleanField(default=True)
     disponivel = models.BooleanField(default=True)
+    controla_estoque = models.BooleanField(default=True)
+    estoque_atual = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
+    estoque_minimo = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
 
     class Meta:
         ordering = ["categoria", "nome"]
@@ -74,6 +77,7 @@ class PedidoRestaurante(models.Model):
     total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     observacoes = models.CharField(max_length=240, blank=True, default="")
     tempo_estimado_min = models.PositiveSmallIntegerField(default=20)
+    estoque_baixado = models.BooleanField(default=False)
     pago_em = models.DateTimeField(null=True, blank=True)
     criado_em = models.DateTimeField(auto_now_add=True)
 
@@ -133,3 +137,30 @@ class MesaRestaurante(models.Model):
     def qr_image_url(self):
         # URL pública simples para renderizar QR sem dependências locais.
         return f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={self.codigo_qr}"
+
+
+class MovimentoEstoqueRestaurante(models.Model):
+    TIPO = (
+        ("entrada", "Entrada"),
+        ("saida", "Saída"),
+        ("ajuste", "Ajuste"),
+        ("reposicao", "Reposição"),
+    )
+    produto = models.ForeignKey(ProdutoRestaurante, on_delete=models.CASCADE, related_name="movimentos_estoque")
+    pedido = models.ForeignKey(
+        PedidoRestaurante,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="movimentos_estoque",
+    )
+    tipo = models.CharField(max_length=20, choices=TIPO)
+    quantidade = models.DecimalField(max_digits=10, decimal_places=2)
+    observacao = models.CharField(max_length=255, blank=True, default="")
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-criado_em"]
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} {self.quantidade} - {self.produto.nome}"

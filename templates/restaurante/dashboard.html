@@ -2,6 +2,11 @@
 {% block title %}Dashboard Restaurante{% endblock %}
 {% block content %}
 <h1>Dashboard do Restaurante</h1>
+{% if stats.recebido > 0 %}
+<section class="card" style="border:2px solid #f59e0b;">
+    <strong>Alerta:</strong> existem {{ stats.recebido }} pedidos novos recebidos.
+</section>
+{% endif %}
 <section class="card">
     <p>
         <strong>Novos:</strong> {{ stats.recebido }} |
@@ -74,13 +79,14 @@
         </p>
         <p><label>Observações</label><input type="text" name="observacoes"></p>
         <table class="data-table">
-            <thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Qtd</th></tr></thead>
+            <thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Stock</th><th>Qtd</th></tr></thead>
             <tbody>
                 {% for p in produtos %}
                 <tr>
                     <td>{{ p.nome }}</td>
                     <td>{{ p.categoria.nome }}</td>
                     <td>Kz {{ p.preco }}</td>
+                    <td>{{ p.estoque_atual }} {% if p.estoque_atual <= p.estoque_minimo %}<strong style="color:#ef4444;">(baixo)</strong>{% endif %}</td>
                     <td><input type="number" min="0" name="qtd_{{ p.id }}" value="0" style="width:90px;"></td>
                 </tr>
                 {% endfor %}
@@ -138,6 +144,7 @@
                         <input type="hidden" name="pedido_id" value="{{ p.id }}">
                         <button type="submit">Emitir fatura</button>
                     </form>
+                    <a href="{% url 'restaurante:ticket_cozinha' p.id %}" target="_blank">Ticket cozinha</a>
                 </td>
             </tr>
         {% empty %}
@@ -175,6 +182,7 @@
                         <input type="hidden" name="pedido_id" value="{{ p.id }}">
                         <button type="submit">Emitir fatura</button>
                     </form>
+                    <a href="{% url 'restaurante:ticket_cozinha' p.id %}" target="_blank">Ticket cozinha</a>
                 </td>
             </tr>
         {% empty %}
@@ -220,6 +228,7 @@
                         <input type="hidden" name="pedido_id" value="{{ p.id }}">
                         <button type="submit">Emitir fatura</button>
                     </form>
+                    <a href="{% url 'restaurante:ticket_cozinha' p.id %}" target="_blank">Ticket cozinha</a>
                 </td>
             </tr>
         {% empty %}
@@ -228,4 +237,24 @@
         </tbody>
     </table>
 </section>
+{% if stats.recebido > 0 %}
+<script>
+(() => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = 880;
+    gain.gain.value = 0.03;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    setTimeout(() => osc.stop(), 280);
+  } catch (e) {
+    // Silencioso se o navegador bloquear áudio automático.
+  }
+})();
+</script>
+{% endif %}
 {% endblock %}
