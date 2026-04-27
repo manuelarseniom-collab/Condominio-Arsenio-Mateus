@@ -284,31 +284,40 @@ def servico_restaurante(request):
         if total <= 0:
             messages.error(request, "Selecione pelo menos um produto para confirmar o pedido.")
         else:
-            with transaction.atomic():
-                servico, _ = Servico.objects.get_or_create(
-                    codigo="restaurante",
-                    defaults={"nome": "Restaurante", "descricao": "Pedido interno de restauração"},
-                )
-                descricao = "Pedido restaurante via área do cliente."
-                SolicitacaoServico.objects.create(reserva=reserva, servico=servico, descricao=descricao)
-                pedido = PedidoRestaurante.objects.create(
-                    reserva=reserva,
-                    origem="quarto",
-                    cliente_nome=cliente.nome,
-                    cliente_telefone=cliente.telefone,
-                    status="recebido",
-                    total=Decimal("0.00"),
-                )
-                for linha in linhas:
-                    if linha["qtd"] > 0:
-                        ItemPedidoRestaurante.objects.create(
-                            pedido=pedido,
-                            produto=linha["produto"],
-                            quantidade=linha["qtd"],
-                        )
-                pedido.recalcular_total()
-            messages.success(request, f"Pedido de restaurante confirmado. Total: Kz {total}.")
-            return redirect("portal_cliente:servicos")
+            try:
+                with transaction.atomic():
+                    servico, _ = Servico.objects.get_or_create(
+                        codigo="restaurante",
+                        defaults={"nome": "Restaurante", "descricao": "Pedido interno de restauração"},
+                    )
+                    descricao = "Pedido restaurante via área do cliente."
+                    SolicitacaoServico.objects.create(reserva=reserva, servico=servico, descricao=descricao)
+                    pedido = PedidoRestaurante.objects.create(
+                        reserva=reserva,
+                        origem="quarto",
+                        cliente_nome=cliente.nome,
+                        cliente_telefone=cliente.telefone,
+                        status="recebido",
+                        total=Decimal("0.00"),
+                    )
+                    for linha in linhas:
+                        if linha["qtd"] > 0:
+                            if not linha["produto"].preco or linha["produto"].preco <= Decimal("0.00"):
+                                raise ValueError(
+                                    f"Produto sem preço definido: {linha['produto'].nome}. Atualize o menu antes de criar o pedido."
+                                )
+                            ItemPedidoRestaurante.objects.create(
+                                pedido=pedido,
+                                produto=linha["produto"],
+                                quantidade=linha["qtd"],
+                                preco_unitario=linha["produto"].preco,
+                            )
+                    pedido.recalcular_total()
+            except ValueError as exc:
+                messages.error(request, str(exc))
+            else:
+                messages.success(request, f"Pedido de restaurante confirmado. Total: Kz {total}.")
+                return redirect("portal_cliente:servicos")
 
     categorias = {}
     for linha in linhas:

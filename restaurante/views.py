@@ -141,7 +141,16 @@ def menu_qr(request, codigo_qr: str):
             except ValueError:
                 qtd = 0
             if qtd > 0:
-                ItemPedidoRestaurante.objects.create(pedido=pedido, produto=produto, quantidade=qtd)
+                if not produto.preco or produto.preco <= Decimal("0.00"):
+                    messages.error(request, f"Produto sem preço definido: {produto.nome}. Atualize o menu antes de criar o pedido.")
+                    pedido.delete()
+                    return redirect("restaurante:menu_qr", codigo_qr=codigo_qr)
+                ItemPedidoRestaurante.objects.create(
+                    pedido=pedido,
+                    produto=produto,
+                    quantidade=qtd,
+                    preco_unitario=produto.preco,
+                )
         if pedido.itens.count() == 0:
             pedido.delete()
             messages.error(request, "Selecione pelo menos um produto para enviar o pedido.")
@@ -233,7 +242,16 @@ def _criar_pedido_presencial(request):
         except ValueError:
             qtd = 0
         if qtd > 0:
-            ItemPedidoRestaurante.objects.create(pedido=pedido, produto=produto, quantidade=qtd)
+            if not produto.preco or produto.preco <= Decimal("0.00"):
+                pedido.delete()
+                messages.error(request, f"Produto sem preço definido: {produto.nome}. Atualize o menu antes de criar o pedido.")
+                return None
+            ItemPedidoRestaurante.objects.create(
+                pedido=pedido,
+                produto=produto,
+                quantidade=qtd,
+                preco_unitario=produto.preco,
+            )
     if pedido.itens.count() == 0:
         pedido.delete()
         messages.error(request, "Selecione pelo menos um item para criar o pedido presencial.")
@@ -306,7 +324,7 @@ def _gerar_fatura_do_pedido(pedido, user):
             fatura,
             f"{item.produto.nome} (Pedido restaurante #{pedido.id})",
             item.quantidade,
-            item.produto.preco,
+            item.preco_unitario,
             origem_tipo="restaurante",
             origem_id=pedido.id,
             criado_por=user,

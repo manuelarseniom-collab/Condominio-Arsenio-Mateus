@@ -100,19 +100,19 @@ class ItemPedidoRestaurante(models.Model):
     )
     produto = models.ForeignKey(ProdutoRestaurante, on_delete=models.PROTECT)
     quantidade = models.PositiveSmallIntegerField(default=1)
+    preco_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
 
     class Meta:
         ordering = ["id"]
 
     @property
     def subtotal(self) -> Decimal:
-        from faturacao.services import preco_com_epoca
-
-        mult = self.pedido.reserva.epoca.multiplicador if self.pedido.reserva.epoca_id else Decimal("1.00")
-        unit = preco_com_epoca(self.produto.preco, mult)
-        return (unit * Decimal(self.quantidade)).quantize(Decimal("0.01"))
+        unit = self.preco_unitario if self.preco_unitario is not None else Decimal("0.00")
+        return (Decimal(self.quantidade) * unit).quantize(Decimal("0.01"))
 
     def save(self, *args, **kwargs):
+        if (self.preco_unitario is None or self.preco_unitario <= Decimal("0.00")) and self.produto_id:
+            self.preco_unitario = self.produto.preco or Decimal("0.00")
         super().save(*args, **kwargs)
 
 
