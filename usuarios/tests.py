@@ -282,6 +282,26 @@ class AcessoPorPerfilTests(TestCase):
         self.client.force_login(user)
         response = self.client.get(reverse("usuarios:dashboard_restaurante"), follow=True)
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Dashboard do Restaurante")
+
+    def test_dashboard_restaurante_interno_redireciona_para_plataforma_operacional(self):
+        user = self._criar_utilizador("restoplat", PerfilAcesso.STAFF_RESTAURANTE)
+        self.client.force_login(user)
+        response = self.client.get(reverse("usuarios:dashboard_restaurante"), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Dashboard do Restaurante")
+
+    def test_rotas_internas_restaurante_auxiliares_redirecionam(self):
+        user = self._criar_utilizador("restorotas", PerfilAcesso.STAFF_RESTAURANTE)
+        self.client.force_login(user)
+        novo = self.client.get(reverse("usuarios:novo_pedido_restaurante"), follow=True)
+        pedidos = self.client.get(reverse("usuarios:pedidos_restaurante"), follow=True)
+        cozinha = self.client.get(reverse("usuarios:cozinha_restaurante"), follow=True)
+        menu = self.client.get(reverse("usuarios:menu_restaurante_admin"), follow=True)
+        self.assertEqual(novo.status_code, 200)
+        self.assertEqual(pedidos.status_code, 200)
+        self.assertEqual(cozinha.status_code, 200)
+        self.assertEqual(menu.status_code, 200)
 
     def test_staff_restaurante_sem_permissao_em_reservas(self):
         user = self._criar_utilizador("restobloq", PerfilAcesso.STAFF_RESTAURANTE)

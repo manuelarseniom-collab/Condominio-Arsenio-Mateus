@@ -199,7 +199,11 @@ def ticket_cozinha(request, pedido_id: int):
 
 def _user_pode_operar_restaurante(user) -> bool:
     role = getattr(getattr(user, "perfil_acesso", None), "role", "")
+    role = str(role or "").strip().lower()
     return role in {
+        "trabalhador",
+        "restaurante",
+        "trabalhador_restaurante",
         PerfilAcesso.STAFF_RESTAURANTE,
         PerfilAcesso.RECEPCAO,
         PerfilAcesso.ADMIN,

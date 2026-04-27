@@ -12,8 +12,8 @@ from usuarios.models import PerfilAcesso
 from reservas.models import Reserva
 from limpeza.models import PedidoLimpeza
 from lavandaria.models import PedidoLavandaria
-from restaurante.models import PedidoRestaurante, ProdutoRestaurante
 from faturacao.models import Pagamento
+from restaurante import views as restaurante_views
 
 
 def _normalizar_role(role: str) -> str:
@@ -282,16 +282,44 @@ def dashboard_restaurante(request):
     if not tem_permissao_modulo(request.user, "restaurante"):
         messages.warning(request, "Sem permissão para o módulo de Restaurante.")
         return redirect("usuarios:acesso_interno")
-    ctx = {
-        "pedidos_quarto": PedidoRestaurante.objects.filter(origem="quarto").count(),
-        "pedidos_presenciais": PedidoRestaurante.objects.filter(origem="presencial").count(),
-        "pedidos_qr": PedidoRestaurante.objects.filter(origem="mesa_qr").count(),
-        "em_preparacao": PedidoRestaurante.objects.filter(status="em_preparacao").count(),
-        "prontos": PedidoRestaurante.objects.filter(status="pronto").count(),
-        "entregues": PedidoRestaurante.objects.filter(status="entregue").count(),
-        "menu_total": ProdutoRestaurante.objects.filter(disponivel=True).count(),
-    }
-    return render(request, "interno/restaurante/dashboard.html", ctx)
+    # Plataforma operacional real do restaurante dentro da rota interna.
+    return restaurante_views.lista(request)
+
+
+@never_cache
+@login_required(login_url="/login/interno/")
+def novo_pedido_restaurante(request):
+    if not tem_permissao_modulo(request.user, "restaurante"):
+        messages.warning(request, "Sem permissão para o módulo de Restaurante.")
+        return redirect("usuarios:acesso_interno")
+    return restaurante_views.lista(request)
+
+
+@never_cache
+@login_required(login_url="/login/interno/")
+def pedidos_restaurante(request):
+    if not tem_permissao_modulo(request.user, "restaurante"):
+        messages.warning(request, "Sem permissão para o módulo de Restaurante.")
+        return redirect("usuarios:acesso_interno")
+    return restaurante_views.lista(request)
+
+
+@never_cache
+@login_required(login_url="/login/interno/")
+def cozinha_restaurante(request):
+    if not tem_permissao_modulo(request.user, "restaurante"):
+        messages.warning(request, "Sem permissão para o módulo de Restaurante.")
+        return redirect("usuarios:acesso_interno")
+    return restaurante_views.cozinha(request)
+
+
+@never_cache
+@login_required(login_url="/login/interno/")
+def menu_restaurante_admin(request):
+    if not tem_permissao_modulo(request.user, "restaurante"):
+        messages.warning(request, "Sem permissão para o módulo de Restaurante.")
+        return redirect("usuarios:acesso_interno")
+    return restaurante_views.lista(request)
 
 
 @never_cache
