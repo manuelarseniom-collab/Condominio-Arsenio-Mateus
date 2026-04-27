@@ -12,6 +12,15 @@ class Command(BaseCommand):
 
         usuarios = [
             {
+                "username": "trabalhador.demo",
+                "email": "trabalhador.demo@arsenio.local",
+                "password": "123456",
+                "perfil_seed": "trabalhador",
+                "perfil_role": "trabalhador",
+                "is_staff": True,
+                "is_superuser": False,
+            },
+            {
                 "username": "recepcao.demo",
                 "email": "recepcao.demo@arsenio.local",
                 "password": "123456",

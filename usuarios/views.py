@@ -17,7 +17,9 @@ from faturacao.models import Pagamento
 
 
 def _normalizar_role(role: str) -> str:
+    role_normalizado = str(role or "").strip().lower()
     return {
+        "trabalhador": "trabalhador",
         "recepcionista": PerfilAcesso.RECEPCAO,
         "trabalhador_reservas": PerfilAcesso.RECEPCAO,
         "restaurante": PerfilAcesso.STAFF_RESTAURANTE,
@@ -28,7 +30,7 @@ def _normalizar_role(role: str) -> str:
         "trabalhador_lavandaria": PerfilAcesso.STAFF_LAVANDARIA,
         "admin_condominio": PerfilAcesso.ADMIN_CONDOMINIO,
         "admin_sistema": PerfilAcesso.ADMIN_SISTEMA,
-    }.get(role, role)
+    }.get(role_normalizado, role_normalizado)
 
 
 def redirecionar_pos_login_interno(user) -> str:
@@ -196,16 +198,23 @@ def tem_permissao_modulo(user, modulo: str) -> bool:
         return False
     if user.is_superuser:
         return True
-    role = getattr(getattr(user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
+    role = (
+        getattr(getattr(user, "perfil_acesso", None), "role", None)
+        or getattr(user, "perfil", None)
+        or getattr(user, "role", None)
+        or PerfilAcesso.VISITANTE
+    )
     perfil_normalizado = _normalizar_role(role)
     permissoes = {
         "reservas": {
+            "trabalhador",
             PerfilAcesso.RECEPCAO,
             PerfilAcesso.ADMIN_CONDOMINIO,
             PerfilAcesso.ADMIN_SISTEMA,
             PerfilAcesso.ADMIN,
         },
         "servicos": {
+            "trabalhador",
             PerfilAcesso.STAFF_LIMPEZA,
             PerfilAcesso.STAFF_LAVANDARIA,
             PerfilAcesso.STAFF_MANUTENCAO,
@@ -215,6 +224,7 @@ def tem_permissao_modulo(user, modulo: str) -> bool:
             PerfilAcesso.ADMIN,
         },
         "restaurante": {
+            "trabalhador",
             PerfilAcesso.STAFF_RESTAURANTE,
             PerfilAcesso.RECEPCAO,
             PerfilAcesso.ADMIN_CONDOMINIO,

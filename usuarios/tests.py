@@ -192,11 +192,21 @@ class AcessoPorPerfilTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Dashboard do Restaurante")
 
-    def test_acesso_interno_exibe_links_com_next(self):
+    def test_acesso_interno_exibe_links_diretos_para_modulos(self):
         response = self.client.get(reverse("usuarios:acesso_interno"))
-        self.assertContains(response, f"{reverse('usuarios:login_interno')}?next={reverse('usuarios:dashboard_reservas')}")
-        self.assertContains(response, f"{reverse('usuarios:login_interno')}?next={reverse('usuarios:dashboard_servicos')}")
-        self.assertContains(response, f"{reverse('usuarios:login_interno')}?next={reverse('usuarios:dashboard_restaurante')}")
+        self.assertContains(response, reverse("usuarios:dashboard_reservas"))
+        self.assertContains(response, reverse("usuarios:dashboard_servicos"))
+        self.assertContains(response, reverse("usuarios:dashboard_restaurante"))
+
+    def test_perfil_trabalhador_generico_acede_modulos_em_teste(self):
+        user = self._criar_utilizador("workergeneric", "trabalhador")
+        self.client.force_login(user)
+        reservas = self.client.get(reverse("usuarios:dashboard_reservas"))
+        servicos = self.client.get(reverse("usuarios:dashboard_servicos"))
+        restaurante = self.client.get(reverse("usuarios:dashboard_restaurante"))
+        self.assertEqual(reservas.status_code, 200)
+        self.assertEqual(servicos.status_code, 200)
+        self.assertEqual(restaurante.status_code, 200)
 
     def test_refresh_nao_altera_perfil(self):
         self._criar_utilizador("workerrefresh", PerfilAcesso.RECEPCAO, password="Teste@123")
