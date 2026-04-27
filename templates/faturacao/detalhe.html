@@ -3,9 +3,11 @@
 {% block content %}
 <h1>Fatura {{ fatura.numero_fatura }}</h1>
 <p><strong>Data:</strong> {{ fatura.data_emissao|date:"d/m/Y H:i" }}</p>
+<p><strong>Tipo:</strong> {{ fatura.get_tipo_display }}</p>
 <p><strong>Cliente:</strong> {% if fatura.reserva_id %}{{ fatura.reserva.cliente.nome }}{% else %}{{ fatura.cliente.username }}{% endif %}</p>
 <p><strong>Reserva:</strong> {% if fatura.reserva_id %}#{{ fatura.reserva_id }}{% else %}Sem reserva{% endif %}</p>
 <p><strong>Status:</strong> {{ fatura.get_status_display }}</p>
+<p><strong>Emitido por:</strong> {{ fatura.emitido_por|default:"-" }}</p>
 
 <section class="card">
     <table class="data-table">
@@ -21,9 +23,15 @@
             {% endfor %}
         </tbody>
     </table>
+    <p><strong>Subtotal:</strong> {{ fatura.subtotal }}</p>
+    <p><strong>Desconto:</strong> {{ fatura.desconto }}</p>
     <p><strong>Total:</strong> {{ fatura.total }}</p>
+    <p><strong>Valor pago:</strong> {{ fatura.valor_pago }}</p>
+    <p><strong>Valor pendente:</strong> {{ fatura.valor_pendente }}</p>
+    <p><strong>Estado pagamento:</strong> {{ fatura.get_estado_pagamento_display }}</p>
     <p><strong>Método pagamento:</strong> {{ fatura.metodo_pagamento|default:"-" }}</p>
-    <p><strong>Observação:</strong> Pagamento realizado antecipadamente conforme política do condomínio.</p>
+    <p><strong>Referência:</strong> {{ fatura.referencia_pagamento|default:"-" }}</p>
+    <p><strong>Observações:</strong> {{ fatura.observacoes|default:"Pagamento prévio confirmado conforme política de reserva e serviços." }}</p>
 </section>
 
 <section class="card">

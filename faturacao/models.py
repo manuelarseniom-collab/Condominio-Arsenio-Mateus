@@ -22,10 +22,23 @@ class TabelaPreco(models.Model):
 
 
 class Fatura(models.Model):
+    TIPO = (
+        ("reserva", "Fatura de reserva"),
+        ("sinal", "Fatura de sinal"),
+        ("integral", "Fatura de pagamento integral"),
+        ("servicos", "Fatura de serviços"),
+        ("complementar", "Fatura complementar"),
+        ("final", "Fatura final"),
+    )
     STATUS = (
         ("emitida", "Emitida"),
         ("paga", "Paga"),
         ("cancelada", "Cancelada"),
+    )
+    ESTADO_PAGAMENTO = (
+        ("pendente", "Pendente"),
+        ("pago", "Pago"),
+        ("validado", "Validado"),
     )
 
     cliente = models.ForeignKey(
@@ -44,10 +57,18 @@ class Fatura(models.Model):
     )
     numero_fatura = models.CharField(max_length=50, unique=True, blank=True, null=True)
     data_emissao = models.DateTimeField(auto_now_add=True)
+    tipo = models.CharField(max_length=20, choices=TIPO, default="reserva")
+    subtotal = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    desconto = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
     total = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    valor_pago = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    valor_pendente = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
     status = models.CharField(max_length=20, choices=STATUS, default="emitida")
+    estado_pagamento = models.CharField(max_length=20, choices=ESTADO_PAGAMENTO, default="pendente")
     metodo_pagamento = models.CharField(max_length=50, blank=True, null=True)
+    referencia_pagamento = models.CharField(max_length=50, blank=True, null=True)
     pago_em = models.DateTimeField(blank=True, null=True)
+    observacoes = models.TextField(blank=True, default="")
     enviado_email = models.BooleanField(default=False)
     enviado_whatsapp = models.BooleanField(default=False)
     emitido_por = models.ForeignKey(
@@ -87,17 +108,43 @@ class Fatura(models.Model):
             self.numero_fatura = self.proximo_numero_fatura()
         if not self.cliente_id and self.reserva_id and self.reserva.cliente.user_id:
             self.cliente = self.reserva.cliente.user
+        if self.desconto < 0:
+            self.desconto = Decimal("0.00")
+        if self.valor_pago < 0:
+            self.valor_pago = Decimal("0.00")
+        self.valor_pendente = max(Decimal("0.00"), Decimal(str(self.total)) - Decimal(str(self.valor_pago)))
+        if self.estado_pagamento in {"pago", "validado"} and self.valor_pago <= 0:
+            self.valor_pago = self.total
+            self.valor_pendente = Decimal("0.00")
         if self.status == "paga" and not self.pago_em:
             self.pago_em = timezone.now()
         super().save(*args, **kwargs)
 
 
 class ItemFatura(models.Model):
+    ORIGEM = (
+        ("reserva", "Reserva"),
+        ("limpeza", "Limpeza"),
+        ("lavandaria", "Lavandaria"),
+        ("restaurante", "Restaurante"),
+        ("extensao", "Extensão"),
+        ("manual", "Manual"),
+    )
     fatura = models.ForeignKey(Fatura, on_delete=models.CASCADE, related_name="itens")
     descricao = models.CharField(max_length=200)
     quantidade = models.IntegerField(default=1)
     preco_unitario = models.DecimalField(max_digits=12, decimal_places=2)
     total = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    origem_tipo = models.CharField(max_length=20, choices=ORIGEM, default="manual")
+    origem_id = models.PositiveIntegerField(null=True, blank=True)
+    criado_por = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="itens_fatura_criados",
+    )
+    motivo_ajuste = models.CharField(max_length=255, blank=True, default="")
 
     class Meta:
         ordering = ["id"]
@@ -195,8 +242,10 @@ class Pagamento(models.Model):
                 self._garantir_acesso_cliente_confirmado(reserva)
             self.fatura.status = "paga"
             self.fatura.metodo_pagamento = self.metodo
+            self.fatura.estado_pagamento = "validado"
+            self.fatura.valor_pago = self.valor
             self.fatura.pago_em = timezone.now()
-            self.fatura.save(update_fields=["status", "metodo_pagamento", "pago_em"])
+            self.fatura.save(update_fields=["status", "metodo_pagamento", "estado_pagamento", "valor_pago", "pago_em", "valor_pendente"])
             if prev_status != "aprovado":
                 from faturacao.notificacoes import enviar_fatura_por_email_apos_pagamento
 

@@ -21,8 +21,12 @@ class ProdutoRestaurante(models.Model):
         related_name="produtos",
     )
     nome = models.CharField(max_length=120)
+    descricao = models.CharField(max_length=240, blank=True, default="")
     preco = models.DecimalField(max_digits=10, decimal_places=2)
+    imagem_url = models.URLField(blank=True, default="")
+    tempo_preparo_min = models.PositiveSmallIntegerField(default=15)
     ativo = models.BooleanField(default=True)
+    disponivel = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["categoria", "nome"]
@@ -32,20 +36,45 @@ class ProdutoRestaurante(models.Model):
 
 
 class PedidoRestaurante(models.Model):
+    ORIGEM = (
+        ("quarto", "Pedido do quarto"),
+        ("presencial", "Pedido presencial"),
+        ("mesa_qr", "Pedido por QR Code"),
+    )
     STATUS = (
-        ("pendente", "Pendente"),
+        ("recebido", "Recebido"),
+        ("aceite", "Aceite"),
         ("em_preparacao", "Em preparacao"),
+        ("pronto", "Pronto"),
         ("entregue", "Entregue"),
+        ("pago", "Pago"),
         ("cancelado", "Cancelado"),
     )
 
     reserva = models.ForeignKey(
         "reservas.Reserva",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="pedidos_restaurante",
     )
-    status = models.CharField(max_length=20, choices=STATUS, default="pendente")
+    mesa = models.ForeignKey(
+        "restaurante.MesaRestaurante",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pedidos",
+    )
+    origem = models.CharField(max_length=20, choices=ORIGEM, default="quarto")
+    cliente_nome = models.CharField(max_length=120, blank=True, default="")
+    cliente_telefone = models.CharField(max_length=40, blank=True, default="")
+    qr_code_usado = models.CharField(max_length=80, blank=True, default="")
+    metodo_pagamento = models.CharField(max_length=40, blank=True, default="")
+    status = models.CharField(max_length=20, choices=STATUS, default="recebido")
     total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    observacoes = models.CharField(max_length=240, blank=True, default="")
+    tempo_estimado_min = models.PositiveSmallIntegerField(default=20)
+    pago_em = models.DateTimeField(null=True, blank=True)
     criado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -81,3 +110,26 @@ class ItemPedidoRestaurante(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+
+
+class MesaRestaurante(models.Model):
+    ESTADO = (
+        ("livre", "Livre"),
+        ("ocupada", "Ocupada"),
+        ("aguardando_atendimento", "Aguardando atendimento"),
+    )
+
+    numero = models.PositiveSmallIntegerField(unique=True)
+    codigo_qr = models.CharField(max_length=30, unique=True)
+    estado = models.CharField(max_length=30, choices=ESTADO, default="livre")
+
+    class Meta:
+        ordering = ["numero"]
+
+    def __str__(self):
+        return f"Mesa {self.numero}"
+
+    @property
+    def qr_image_url(self):
+        # URL pública simples para renderizar QR sem dependências locais.
+        return f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={self.codigo_qr}"

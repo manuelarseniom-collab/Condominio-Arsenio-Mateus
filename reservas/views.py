@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 
 from faturacao.models import Pagamento
+from faturacao.services import gerar_fatura_automatica_reserva
 from reservas.disponibilidade import unidade_disponivel_no_periodo
 from reservas.forms_public import EditarReservaForm
 from reservas.referencia_pagamento import formatar_instrucoes_pagamento
@@ -30,6 +31,15 @@ def lista(request):
             reserva.pagamento_confirmado_whatsapp = True
             reserva.save(update_fields=["pagamento_confirmado_whatsapp", "status"])
             messages.success(request, f"Pagamento da reserva #{reserva.id} confirmado por WhatsApp.")
+        elif acao == "gerar_fatura":
+            metodo = request.POST.get("metodo_pagamento") or "presencial_recepcao"
+            fatura = gerar_fatura_automatica_reserva(
+                reserva,
+                emitido_por=request.user,
+                tipo="integral",
+                metodo_pagamento=metodo,
+            )
+            messages.success(request, f"Fatura {fatura.numero_fatura} gerada para a reserva #{reserva.id}.")
         return redirect("reservas:lista")
 
     reservas = Reserva.objects.select_related("cliente", "unidade", "epoca").order_by("-id")[:100]

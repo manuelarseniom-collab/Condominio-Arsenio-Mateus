@@ -1,39 +1,95 @@
 {% extends "base_app.html" %}
 {% block title %}Emitir fatura{% endblock %}
 {% block content %}
-<h1>Emitir fatura</h1>
+<h1>Faturação automática</h1>
 <section class="card">
+    <form method="get" style="display:flex; gap:.5rem; align-items:center;">
+        <input type="text" name="q" value="{{ query }}" placeholder="Pesquisar cliente, reserva, apartamento, telefone ou email">
+        <button type="submit" class="btn-link">Pesquisar</button>
+    </form>
+</section>
+
+<section class="card">
+    <h3>Resultados de reservas</h3>
+    <table class="data-table">
+        <thead><tr><th>Reserva</th><th>Cliente</th><th>Apartamento</th><th>Período</th><th>Estado</th><th>Ação</th></tr></thead>
+        <tbody>
+            {% for r in reservas %}
+            <tr>
+                <td>#{{ r.id }}</td>
+                <td>{{ r.cliente.nome }}</td>
+                <td>{{ r.unidade.codigo }} ({{ r.unidade.tipo }})</td>
+                <td>{{ r.data_inicio }} a {{ r.data_fim }}</td>
+                <td>{{ r.get_status_display }}</td>
+                <td><a href="{% url 'faturacao:emitir' %}?reserva={{ r.id }}">Selecionar</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">Sem resultados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+{% if reserva_selecionada and resumo %}
+<section class="card">
+    <h3>Dados automáticos da reserva #{{ reserva_selecionada.id }}</h3>
+    <p><strong>Cliente:</strong> {{ resumo.cliente_nome }} | <strong>Telefone:</strong> {{ resumo.telefone }} | <strong>Email:</strong> {{ resumo.email }}</p>
+    <p><strong>Documento:</strong> {{ resumo.documento|default:"-" }} | <strong>Apartamento:</strong> {{ resumo.apartamento }} | <strong>Tipologia:</strong> {{ resumo.tipologia }}</p>
+    <p><strong>Período:</strong> {{ resumo.periodo }} | <strong>Estado reserva:</strong> {{ resumo.estado_reserva }} | <strong>Estado pagamento:</strong> {{ resumo.estado_pagamento }}</p>
+    <p><strong>Serviços pendentes de faturação:</strong> {{ resumo.servicos_pendentes }} | <strong>Total estimado a faturar:</strong> {{ resumo.total_faturar }}</p>
+
+    <form method="post" style="display:inline-block; margin-right:.5rem;">
+        {% csrf_token %}
+        <input type="hidden" name="reserva_id" value="{{ reserva_selecionada.id }}">
+        <input type="hidden" name="acao" value="gerar_reserva">
+        <select name="metodo_pagamento">
+            <option value="">Sem pagamento imediato</option>
+            <option value="referencia_bancaria">Online (referência bancária)</option>
+            <option value="presencial_recepcao">Presencial (recepção)</option>
+        </select>
+        <button type="submit">Gerar fatura da reserva</button>
+    </form>
+
+    <form method="post" style="display:inline-block; margin-right:.5rem;">
+        {% csrf_token %}
+        <input type="hidden" name="reserva_id" value="{{ reserva_selecionada.id }}">
+        <input type="hidden" name="acao" value="gerar_servicos">
+        <button type="submit">Gerar fatura dos serviços</button>
+    </form>
+
+    <form method="post" style="display:inline-block;">
+        {% csrf_token %}
+        <input type="hidden" name="reserva_id" value="{{ reserva_selecionada.id }}">
+        <input type="hidden" name="acao" value="gerar_final">
+        <button type="submit">Gerar fatura final</button>
+    </form>
+</section>
+
+<section class="card">
+    <h3>Lançamento manual excecional</h3>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" name="preencher_reserva" value="1" class="btn-link secondary">Carregar dados da reserva</button>
-        {% if reserva_preview %}
-            <hr>
-            <h3>Pré-visualização automática da reserva #{{ reserva_preview.id }}</h3>
-            <p><strong>Cliente:</strong> {{ reserva_preview.cliente.nome }} | <strong>Unidade:</strong> {{ reserva_preview.unidade.codigo }} ({{ reserva_preview.unidade.tipo }})</p>
-            <table class="data-table">
-                <thead><tr><th>Descrição</th><th>Qtd</th><th>Preço Unit.</th><th>Total</th></tr></thead>
-                <tbody>
-                    {% for item in itens_automaticos_preview %}
-                    <tr>
-                        <td>{{ item.descricao }}</td>
-                        <td>{{ item.quantidade }}</td>
-                        <td>{{ item.preco_unitario }}</td>
-                        <td>{{ item.total }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="4">Sem itens automáticos para esta reserva.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
-        <h3>Itens manuais (serviços)</h3>
+        <input type="hidden" name="reserva_id" value="{{ reserva_selecionada.id }}">
+        <input type="hidden" name="acao" value="emitir_manual">
+        <p>
+            <label for="id_tipo_fatura">Tipo de fatura</label>
+            <select id="id_tipo_fatura" name="tipo_fatura">
+                <option value="complementar">Fatura complementar</option>
+                <option value="servicos">Fatura de serviços</option>
+                <option value="final">Fatura final</option>
+            </select>
+        </p>
+        <p>
+            <label for="id_motivo_manual">Motivo (obrigatório para ajuste)</label>
+            <input id="id_motivo_manual" type="text" name="motivo_manual" required>
+        </p>
         {% for item_form in item_forms %}
             <fieldset style="margin-bottom: 1rem; border: 1px solid #ddd; padding: .75rem;">
                 {{ item_form.as_p }}
             </fieldset>
         {% endfor %}
-        <button type="submit" class="btn-link">Emitir fatura</button>
+        <button type="submit" class="btn-link">Emitir fatura manual</button>
     </form>
 </section>
+{% endif %}
 {% endblock %}

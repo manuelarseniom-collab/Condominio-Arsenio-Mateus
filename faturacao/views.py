@@ -2,77 +2,47 @@ from urllib.parse import quote
 
 from django.conf import settings
 from django.contrib import messages
-from django.db.models import Count, Sum
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from faturacao.models import Fatura
 from faturacao.notificacoes import enviar_fatura_por_email_apos_pagamento
-from faturacao.services import add_item_fatura, recalcular_total_fatura
+from faturacao.services import (
+    add_item_fatura,
+    gerar_fatura_automatica_reserva,
+    gerar_fatura_servicos_reserva,
+    recalcular_total_fatura,
+)
+from reservas.models import Reserva
 from usuarios.authz import interno_required
 from usuarios.roles import PERFIL_ADMINISTRADOR, get_user_profile
 
 from .forms import FaturaForm, ItemManualForm
 
 
-def _itens_automaticos_reserva(reserva, incluir_reserva=True, incluir_servicos=True):
-    itens = []
-    if not reserva:
-        return itens
-    if incluir_reserva:
-        itens.append(
-            {
-                "descricao": f"Alojamento {reserva.unidade.tipo} ({reserva.data_inicio} a {reserva.data_fim})",
-                "quantidade": 1,
-                "preco_unitario": reserva.valor_base,
-                "total": reserva.valor_base,
-            }
-        )
-    if not incluir_servicos:
-        return itens
-
-    limpeza = reserva.pedidos_limpeza.exclude(status="cancelado").aggregate(
-        total=Sum("preco"),
-        qtd=Count("id"),
+def _resumo_reserva_faturacao(reserva):
+    limpeza = list(reserva.pedidos_limpeza.exclude(status="cancelado"))
+    lav = list(reserva.pedidos_lavandaria.exclude(status="cancelado"))
+    rest = list(reserva.pedidos_restaurante.exclude(status="cancelado"))
+    total_servicos = sum((p.preco for p in limpeza), start=0) + sum((p.preco_total for p in lav), start=0) + sum(
+        (p.total for p in rest), start=0
     )
-    if limpeza["qtd"]:
-        itens.append(
-            {
-                "descricao": f"Serviços de limpeza ({limpeza['qtd']} pedido(s))",
-                "quantidade": 1,
-                "preco_unitario": limpeza["total"],
-                "total": limpeza["total"],
-            }
-        )
-
-    lav = reserva.pedidos_lavandaria.exclude(status="cancelado").aggregate(
-        total=Sum("preco_total"),
-        qtd=Count("id"),
-    )
-    if lav["qtd"]:
-        itens.append(
-            {
-                "descricao": f"Serviços de lavandaria ({lav['qtd']} pedido(s))",
-                "quantidade": 1,
-                "preco_unitario": lav["total"],
-                "total": lav["total"],
-            }
-        )
-
-    rest = reserva.pedidos_restaurante.exclude(status="cancelado").aggregate(
-        total=Sum("total"),
-        qtd=Count("id"),
-    )
-    if rest["qtd"]:
-        itens.append(
-            {
-                "descricao": f"Consumos restaurante ({rest['qtd']} pedido(s))",
-                "quantidade": 1,
-                "preco_unitario": rest["total"],
-                "total": rest["total"],
-            }
-        )
-    return itens
+    return {
+        "reserva": reserva,
+        "cliente_nome": reserva.cliente.nome,
+        "telefone": reserva.cliente.telefone,
+        "email": reserva.cliente.email,
+        "documento": reserva.cliente.numero_documento_identificacao,
+        "apartamento": reserva.unidade.codigo,
+        "tipologia": reserva.unidade.tipo,
+        "periodo": f"{reserva.data_inicio} a {reserva.data_fim}",
+        "estado_reserva": reserva.status,
+        "estado_pagamento": "pago" if reserva.cliente.situacao_financeira == "paga" else "pendente",
+        "servicos_pendentes": len(limpeza) + len(lav) + len(rest),
+        "total_servicos": total_servicos,
+        "total_faturar": reserva.valor_base + total_servicos,
+    }
 
 
 @interno_required
@@ -96,101 +66,90 @@ def lista(request):
 @interno_required
 def emitir_fatura(request):
     item_forms = [ItemManualForm(prefix=f"item{i}") for i in range(1, 4)]
-    itens_automaticos_preview = []
-    reserva_preview = None
+    form = FaturaForm(request.POST or None)
+    query = (request.GET.get("q") or "").strip()
+    reserva_id = request.GET.get("reserva") or request.POST.get("reserva_id")
+    reservas = Reserva.objects.select_related("cliente", "unidade").order_by("-id")
+    if query:
+        reservas = reservas.filter(
+            Q(id__icontains=query)
+            | Q(cliente__nome__icontains=query)
+            | Q(cliente__telefone__icontains=query)
+            | Q(cliente__email__icontains=query)
+            | Q(unidade__codigo__icontains=query)
+        )
+    reservas = reservas[:30]
 
-    if request.method == "POST":
-        form = FaturaForm(request.POST)
-        item_forms = [ItemManualForm(request.POST, prefix=f"item{i}") for i in range(1, 4)]
-        if form.is_valid():
-            reserva_preview = form.cleaned_data.get("reserva")
-            incluir_reserva = form.cleaned_data["incluir_reserva"]
-            incluir_servicos = form.cleaned_data["incluir_servicos_reserva"]
-            itens_automaticos_preview = _itens_automaticos_reserva(
-                reserva_preview,
-                incluir_reserva=incluir_reserva,
-                incluir_servicos=incluir_servicos,
-            )
+    reserva = None
+    resumo = None
+    if reserva_id:
+        reserva = Reserva.objects.select_related("cliente", "unidade").filter(pk=reserva_id).first()
+        if reserva:
+            resumo = _resumo_reserva_faturacao(reserva)
 
-        if request.POST.get("preencher_reserva"):
-            if form.is_valid() and reserva_preview and reserva_preview.cliente.user_id:
-                form = FaturaForm(
-                    initial={
-                        "reserva": reserva_preview,
-                        "cliente": reserva_preview.cliente,
-                        "incluir_reserva": form.cleaned_data["incluir_reserva"],
-                        "incluir_servicos_reserva": form.cleaned_data["incluir_servicos_reserva"],
-                    }
-                )
-                messages.info(request, "Dados da reserva carregados automaticamente no formulário.")
-            return render(
-                request,
-                "faturacao/emitir.html",
-                {
-                    "form": form,
-                    "item_forms": item_forms,
-                    "itens_automaticos_preview": itens_automaticos_preview,
-                    "reserva_preview": reserva_preview,
-                },
-            )
-
-        if form.is_valid() and all(i.is_valid() for i in item_forms):
-            cliente = form.cleaned_data["cliente"]
-            reserva = form.cleaned_data.get("reserva")
-            incluir_reserva = form.cleaned_data["incluir_reserva"]
-            incluir_servicos = form.cleaned_data["incluir_servicos_reserva"]
-
-            if reserva and reserva.cliente.user_id:
-                cliente = reserva.cliente
-
-            fatura = Fatura.objects.create(
-                cliente=cliente.user,
-                reserva=reserva,
-                status="emitida",
-                emitido_por=request.user,
-            )
-            for item in _itens_automaticos_reserva(
+    if request.method == "POST" and reserva:
+        acao = request.POST.get("acao")
+        if acao == "gerar_reserva":
+            metodo = request.POST.get("metodo_pagamento") or ""
+            fatura = gerar_fatura_automatica_reserva(
                 reserva,
-                incluir_reserva=incluir_reserva,
-                incluir_servicos=incluir_servicos,
-            ):
-                add_item_fatura(
-                    fatura,
-                    item["descricao"],
-                    item["quantidade"],
-                    item["preco_unitario"],
-                )
-            for item in item_forms:
-                cd = item.cleaned_data
-                if (cd.get("descricao") or "").strip():
-                    add_item_fatura(fatura, cd["descricao"], cd["quantidade"], cd["preco_unitario"])
-            recalcular_total_fatura(fatura)
-            messages.success(request, f"Fatura {fatura.numero_fatura} emitida com sucesso.")
+                emitido_por=request.user,
+                tipo="integral" if metodo else "reserva",
+                metodo_pagamento=metodo or None,
+            )
+            messages.success(request, f"Fatura da reserva gerada: {fatura.numero_fatura}")
             return redirect("faturacao:detalhe", fatura_id=fatura.id)
-    else:
-        reserva_id = request.GET.get("reserva")
-        initial = {}
-        if reserva_id:
-            try:
-                from reservas.models import Reserva
+        if acao == "gerar_servicos":
+            fatura = gerar_fatura_servicos_reserva(reserva, emitido_por=request.user, tipo="servicos")
+            if not fatura:
+                messages.info(request, "Não existem serviços pendentes de faturação para esta reserva.")
+                return redirect(f"{request.path}?reserva={reserva.id}")
+            messages.success(request, f"Fatura de serviços gerada: {fatura.numero_fatura}")
+            return redirect("faturacao:detalhe", fatura_id=fatura.id)
+        if acao == "gerar_final":
+            fatura = gerar_fatura_servicos_reserva(reserva, emitido_por=request.user, tipo="final")
+            if not fatura:
+                fatura = gerar_fatura_automatica_reserva(reserva, emitido_por=request.user, tipo="final")
+            messages.success(request, f"Fatura final gerada: {fatura.numero_fatura}")
+            return redirect("faturacao:detalhe", fatura_id=fatura.id)
 
-                reserva = Reserva.objects.select_related("cliente", "unidade").get(pk=reserva_id)
-                initial["reserva"] = reserva
-                if reserva.cliente.user_id:
-                    initial["cliente"] = reserva.cliente
-                reserva_preview = reserva
-                itens_automaticos_preview = _itens_automaticos_reserva(reserva)
-            except Reserva.DoesNotExist:
-                pass
-        form = FaturaForm(initial=initial)
+        if acao == "emitir_manual":
+            item_forms = [ItemManualForm(request.POST, prefix=f"item{i}") for i in range(1, 4)]
+            if all(i.is_valid() for i in item_forms):
+                fatura = Fatura.objects.create(
+                    cliente=reserva.cliente.user,
+                    reserva=reserva,
+                    tipo=request.POST.get("tipo_fatura") or "complementar",
+                    status="emitida",
+                    emitido_por=request.user,
+                    observacoes="Pagamento prévio confirmado conforme política de reserva e serviços.",
+                )
+                for item in item_forms:
+                    cd = item.cleaned_data
+                    if (cd.get("descricao") or "").strip():
+                        add_item_fatura(
+                            fatura,
+                            cd["descricao"],
+                            cd["quantidade"],
+                            cd["preco_unitario"],
+                            origem_tipo="manual",
+                            criado_por=request.user,
+                            motivo_ajuste=request.POST.get("motivo_manual", "").strip(),
+                        )
+                recalcular_total_fatura(fatura)
+                messages.success(request, f"Fatura manual complementar gerada: {fatura.numero_fatura}")
+                return redirect("faturacao:detalhe", fatura_id=fatura.id)
+
     return render(
         request,
         "faturacao/emitir.html",
         {
             "form": form,
             "item_forms": item_forms,
-            "itens_automaticos_preview": itens_automaticos_preview,
-            "reserva_preview": reserva_preview,
+            "reservas": reservas,
+            "query": query,
+            "reserva_selecionada": reserva,
+            "resumo": resumo,
         },
     )
 
@@ -204,8 +163,10 @@ def detalhe(request, fatura_id: int):
             metodo = request.POST.get("metodo_pagamento") or "presencial_recepcao"
             fatura.status = "paga"
             fatura.metodo_pagamento = metodo
+            fatura.estado_pagamento = "validado"
+            fatura.valor_pago = fatura.total
             fatura.pago_em = timezone.now()
-            fatura.save(update_fields=["status", "metodo_pagamento", "pago_em"])
+            fatura.save(update_fields=["status", "metodo_pagamento", "estado_pagamento", "valor_pago", "pago_em", "valor_pendente"])
             messages.success(request, "Pagamento pré-pago registado com sucesso.")
         elif acao == "cancelar":
             if get_user_profile(request.user) != PERFIL_ADMINISTRADOR and not request.user.is_superuser:

@@ -20,19 +20,22 @@
 </section>
 <section class="card">
     <table class="data-table">
-        <thead><tr><th>Nº Fatura</th><th>Reserva</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Nº Fatura</th><th>Tipo</th><th>Reserva</th><th>Cliente</th><th>Total</th><th>Pago</th><th>Pendente</th><th>Estado</th><th>Ações</th></tr></thead>
         <tbody>
         {% for f in faturas %}
             <tr>
                 <td>{{ f.numero_fatura }}</td>
+                <td>{{ f.get_tipo_display }}</td>
                 <td>{% if f.reserva_id %}#{{ f.reserva_id }}{% else %}-{% endif %}</td>
                 <td>{% if f.reserva_id %}{{ f.reserva.cliente.nome }}{% else %}{{ f.cliente.username }}{% endif %}</td>
                 <td>{{ f.total }}</td>
+                <td>{{ f.valor_pago }}</td>
+                <td>{{ f.valor_pendente }}</td>
                 <td>{{ f.get_status_display }}</td>
                 <td><a href="{% url 'faturacao:detalhe' f.id %}">Abrir</a></td>
             </tr>
         {% empty %}
-            <tr><td colspan="6">Sem faturas.</td></tr>
+            <tr><td colspan="9">Sem faturas.</td></tr>
         {% endfor %}
         </tbody>
     </table>

@@ -1,0 +1,28 @@
+{% extends "base_app.html" %}
+{% block title %}Relatórios Restaurante{% endblock %}
+{% block content %}
+<h1>Relatórios do Restaurante</h1>
+<section class="card">
+    <form method="get">
+        <label>Período</label>
+        <select name="periodo">
+            <option value="hoje" {% if periodo == "hoje" %}selected{% endif %}>Hoje</option>
+            <option value="7d" {% if periodo == "7d" %}selected{% endif %}>Últimos 7 dias</option>
+            <option value="30d" {% if periodo == "30d" %}selected{% endif %}>Últimos 30 dias</option>
+        </select>
+        <button type="submit">Aplicar</button>
+    </form>
+    <p><strong>Total de vendas:</strong> Kz {{ resumo.total_vendas }}</p>
+    <p><strong>Pedidos cancelados:</strong> {{ resumo.cancelados }}</p>
+</section>
+<section class="card">
+    <h3>Pedidos por estado</h3>
+    <ul>{% for x in resumo.por_estado %}<li>{{ x.status }}: {{ x.total }}</li>{% empty %}<li>Sem dados</li>{% endfor %}</ul>
+    <h3>Pedidos por origem</h3>
+    <ul>{% for x in resumo.por_origem %}<li>{{ x.origem }}: {{ x.total }}</li>{% empty %}<li>Sem dados</li>{% endfor %}</ul>
+    <h3>Pedidos por mesa</h3>
+    <ul>{% for x in resumo.por_mesa %}<li>Mesa {{ x.mesa__numero }}: {{ x.total }}</li>{% empty %}<li>Sem dados</li>{% endfor %}</ul>
+    <h3>Pedidos por quarto</h3>
+    <ul>{% for x in resumo.por_quarto %}<li>Quarto {{ x.reserva__unidade__codigo }}: {{ x.total }}</li>{% empty %}<li>Sem dados</li>{% endfor %}</ul>
+</section>
+{% endblock %}

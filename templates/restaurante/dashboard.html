@@ -1,0 +1,231 @@
+{% extends "base_app.html" %}
+{% block title %}Dashboard Restaurante{% endblock %}
+{% block content %}
+<h1>Dashboard do Restaurante</h1>
+<section class="card">
+    <p>
+        <strong>Novos:</strong> {{ stats.recebido }} |
+        <strong>Preparação:</strong> {{ stats.em_preparacao }} |
+        <strong>Prontos:</strong> {{ stats.pronto }} |
+        <strong>Entregues:</strong> {{ stats.entregue }} |
+        <strong>Cancelados:</strong> {{ stats.cancelado }}
+    </p>
+    <p>
+        <strong>Quarto:</strong> {{ stats.quarto }} |
+        <strong>Presencial:</strong> {{ stats.presencial }} |
+        <strong>QR Code:</strong> {{ stats.mesa_qr }} |
+        <strong>Pendentes:</strong> {{ stats.pendentes }} |
+        <strong>Total vendido hoje:</strong> Kz {{ stats.total_dia }}
+    </p>
+    <p>
+        <a class="btn-link" href="{% url 'restaurante:cozinha' %}">Cozinha / Preparação</a>
+        <a class="btn-link secondary" href="{% url 'restaurante:relatorios' %}">Relatórios</a>
+    </p>
+</section>
+
+<section class="card">
+    <h2>Mesas e QR Code</h2>
+    <table class="data-table">
+        <thead><tr><th>Mesa</th><th>Estado</th><th>QR</th><th>Link menu</th></tr></thead>
+        <tbody>
+            {% for m in mesas %}
+            <tr>
+                <td>Mesa {{ m.numero }}</td>
+                <td>{{ m.get_estado_display }}</td>
+                <td>
+                    <img src="{{ m.qr_image_url }}" alt="QR Mesa {{ m.numero }}" style="width:70px;height:70px;">
+                </td>
+                <td>
+                    <a href="{% url 'restaurante:menu_qr' m.codigo_qr %}" target="_blank">
+                        Abrir menu da mesa
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">Sem mesas configuradas.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2>Novo pedido presencial</h2>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="novo_presencial">
+        <p>
+            <label>Mesa</label>
+            <select name="mesa_id">
+                <option value="">Sem mesa definida</option>
+                {% for m in mesas %}
+                <option value="{{ m.id }}">Mesa {{ m.numero }} ({{ m.get_estado_display }})</option>
+                {% endfor %}
+            </select>
+        </p>
+        <p><label>Nome cliente (opcional)</label><input type="text" name="cliente_nome"></p>
+        <p><label>Telefone (opcional)</label><input type="text" name="cliente_telefone"></p>
+        <p>
+            <label>Método de pagamento</label>
+            <select name="metodo_pagamento">
+                <option value="">Definir depois</option>
+                <option value="presencial_recepcao">Presencial</option>
+                <option value="referencia_bancaria">Online</option>
+            </select>
+        </p>
+        <p><label>Observações</label><input type="text" name="observacoes"></p>
+        <table class="data-table">
+            <thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Qtd</th></tr></thead>
+            <tbody>
+                {% for p in produtos %}
+                <tr>
+                    <td>{{ p.nome }}</td>
+                    <td>{{ p.categoria.nome }}</td>
+                    <td>Kz {{ p.preco }}</td>
+                    <td><input type="number" min="0" name="qtd_{{ p.id }}" value="0" style="width:90px;"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">Criar pedido presencial</button>
+    </form>
+</section>
+
+<section class="card">
+    <h2>Pedidos</h2>
+    <form method="get" style="margin-bottom:.75rem;">
+        <label>Filtrar estado</label>
+        <select name="status">
+            <option value="">Todos</option>
+            {% for s, l in status_choices %}
+            <option value="{{ s }}" {% if status_ativo == s %}selected{% endif %}>{{ l }}</option>
+            {% endfor %}
+        </select>
+        <label style="margin-left:.5rem;">Origem</label>
+        <select name="origem">
+            <option value="">Todas</option>
+            {% for s, l in origem_choices %}
+            <option value="{{ s }}" {% if origem_ativa == s %}selected{% endif %}>{{ l }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Filtrar</button>
+    </form>
+    <h3>Pedidos do quarto</h3>
+    <table class="data-table" style="margin-bottom:1rem;">
+        <thead><tr><th>ID</th><th>Quarto</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Ações</th></tr></thead>
+        <tbody>
+        {% for p in pedidos_quarto %}
+            <tr>
+                <td>#{{ p.id }}</td>
+                <td>{% if p.reserva_id %}{{ p.reserva.unidade.codigo }}{% else %}-{% endif %}</td>
+                <td>{% if p.reserva_id %}{{ p.reserva.cliente.nome }}{% else %}-{% endif %}</td>
+                <td>Kz {{ p.total }}</td>
+                <td>{{ p.get_status_display }}</td>
+                <td>
+                    <form method="post" style="display:inline-block;">
+                        {% csrf_token %}
+                        <input type="hidden" name="acao" value="atualizar_status">
+                        <input type="hidden" name="pedido_id" value="{{ p.id }}">
+                        <select name="status">
+                            {% for s, l in status_choices %}
+                            <option value="{{ s }}" {% if p.status == s %}selected{% endif %}>{{ l }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Atualizar</button>
+                    </form>
+                    <form method="post" style="display:inline-block;">
+                        {% csrf_token %}
+                        <input type="hidden" name="acao" value="gerar_fatura_pedido">
+                        <input type="hidden" name="pedido_id" value="{{ p.id }}">
+                        <button type="submit">Emitir fatura</button>
+                    </form>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6">Sem pedidos do quarto.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Pedidos presenciais</h3>
+    <table class="data-table" style="margin-bottom:1rem;">
+        <thead><tr><th>ID</th><th>Mesa</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Ações</th></tr></thead>
+        <tbody>
+        {% for p in pedidos_presenciais %}
+            <tr>
+                <td>#{{ p.id }}</td>
+                <td>{% if p.mesa_id %}Mesa {{ p.mesa.numero }}{% else %}-{% endif %}</td>
+                <td>{{ p.cliente_nome|default:"-" }}</td>
+                <td>Kz {{ p.total }}</td>
+                <td>{{ p.get_status_display }}</td>
+                <td>
+                    <form method="post" style="display:inline-block;">
+                        {% csrf_token %}
+                        <input type="hidden" name="acao" value="atualizar_status">
+                        <input type="hidden" name="pedido_id" value="{{ p.id }}">
+                        <select name="status">
+                            {% for s, l in status_choices %}
+                            <option value="{{ s }}" {% if p.status == s %}selected{% endif %}>{{ l }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Atualizar</button>
+                    </form>
+                    <form method="post" style="display:inline-block;">
+                        {% csrf_token %}
+                        <input type="hidden" name="acao" value="gerar_fatura_pedido">
+                        <input type="hidden" name="pedido_id" value="{{ p.id }}">
+                        <button type="submit">Emitir fatura</button>
+                    </form>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6">Sem pedidos presenciais.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Pedidos por QR Code</h3>
+    <table class="data-table">
+        <thead><tr><th>ID</th><th>Origem</th><th>Mesa/Quarto</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Ações</th></tr></thead>
+        <tbody>
+        {% for p in pedidos_qr %}
+            <tr>
+                <td>#{{ p.id }}</td>
+                <td>{{ p.get_origem_display }}</td>
+                <td>
+                    {% if p.mesa_id %}Mesa {{ p.mesa.numero }}
+                    {% elif p.reserva_id %}Quarto {{ p.reserva.unidade.codigo }}
+                    {% else %}-{% endif %}
+                </td>
+                <td>
+                    {% if p.reserva_id %}{{ p.reserva.cliente.nome }}
+                    {% else %}{{ p.cliente_nome|default:"-" }}{% endif %}
+                </td>
+                <td>Kz {{ p.total }}</td>
+                <td>{{ p.get_status_display }}</td>
+                <td>
+                    <form method="post" style="display:inline-block;">
+                        {% csrf_token %}
+                        <input type="hidden" name="acao" value="atualizar_status">
+                        <input type="hidden" name="pedido_id" value="{{ p.id }}">
+                        <select name="status">
+                            {% for s, l in status_choices %}
+                            <option value="{{ s }}" {% if p.status == s %}selected{% endif %}>{{ l }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Atualizar</button>
+                    </form>
+                    <form method="post" style="display:inline-block;">
+                        {% csrf_token %}
+                        <input type="hidden" name="acao" value="gerar_fatura_pedido">
+                        <input type="hidden" name="pedido_id" value="{{ p.id }}">
+                        <button type="submit">Emitir fatura</button>
+                    </form>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="7">Sem pedidos por QR Code.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

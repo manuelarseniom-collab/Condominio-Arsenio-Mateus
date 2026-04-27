@@ -94,6 +94,8 @@ class LoginStaffView(UsuarioLoginView):
     def form_valid(self, form):
         response = super().form_valid(form)
         role = getattr(getattr(self.request.user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
+        if role == PerfilAcesso.STAFF_RESTAURANTE:
+            return redirect("restaurante:lista")
         if role in (
             PerfilAcesso.RECEPCAO,
             PerfilAcesso.STAFF_LAVANDARIA,

@@ -291,7 +291,14 @@ def servico_restaurante(request):
                 )
                 descricao = "Pedido restaurante via área do cliente."
                 SolicitacaoServico.objects.create(reserva=reserva, servico=servico, descricao=descricao)
-                pedido = PedidoRestaurante.objects.create(reserva=reserva, status="pendente", total=Decimal("0.00"))
+                pedido = PedidoRestaurante.objects.create(
+                    reserva=reserva,
+                    origem="quarto",
+                    cliente_nome=cliente.nome,
+                    cliente_telefone=cliente.telefone,
+                    status="recebido",
+                    total=Decimal("0.00"),
+                )
                 for linha in linhas:
                     if linha["qtd"] > 0:
                         ItemPedidoRestaurante.objects.create(

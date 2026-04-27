@@ -1,0 +1,29 @@
+{% extends "base_public.html" %}
+{% block title %}Menu Mesa {{ mesa.numero }}{% endblock %}
+{% block content %}
+<section class="pub-section">
+    <h1>Menu digital - Mesa {{ mesa.numero }}</h1>
+    <p>Origem do pedido: QR Code</p>
+    <form method="post">
+        {% csrf_token %}
+        <p><label>Nome (opcional)</label><input type="text" name="cliente_nome"></p>
+        <p><label>Telefone (opcional)</label><input type="text" name="cliente_telefone"></p>
+        {% for categoria, produtos in categorias.items %}
+        <h3>{{ categoria }}</h3>
+        <table class="data-table">
+            <thead><tr><th>Produto</th><th>Preço</th><th>Qtd</th></tr></thead>
+            <tbody>
+            {% for p in produtos %}
+                <tr>
+                    <td>{{ p.nome }}</td>
+                    <td>Kz {{ p.preco }}</td>
+                    <td><input type="number" min="0" name="qtd_{{ p.id }}" value="0" style="width:80px;"></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% endfor %}
+        <button type="submit" class="btn-pub-primary">Enviar pedido</button>
+    </form>
+</section>
+{% endblock %}

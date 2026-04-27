@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import CategoriaProduto, ItemPedidoRestaurante, PedidoRestaurante, ProdutoRestaurante
+from .models import CategoriaProduto, ItemPedidoRestaurante, MesaRestaurante, PedidoRestaurante, ProdutoRestaurante
 
 
 @admin.register(CategoriaProduto)
@@ -10,7 +10,7 @@ class CategoriaAdmin(admin.ModelAdmin):
 
 @admin.register(ProdutoRestaurante)
 class ProdutoAdmin(admin.ModelAdmin):
-    list_display = ("nome", "categoria", "preco", "ativo")
+    list_display = ("nome", "categoria", "preco", "disponivel", "tempo_preparo_min", "ativo")
 
 
 class ItemInline(admin.TabularInline):
@@ -20,5 +20,10 @@ class ItemInline(admin.TabularInline):
 
 @admin.register(PedidoRestaurante)
 class PedidoAdmin(admin.ModelAdmin):
-    list_display = ("id", "reserva", "total", "status", "criado_em")
+    list_display = ("id", "origem", "mesa", "reserva", "total", "status", "metodo_pagamento", "criado_em")
     inlines = [ItemInline]
+
+
+@admin.register(MesaRestaurante)
+class MesaAdmin(admin.ModelAdmin):
+    list_display = ("numero", "codigo_qr", "estado")

@@ -19,6 +19,8 @@ def _sync_restaurante_pedido(pedido):
     pedido = PedidoRestaurante.objects.get(pk=pedido.pk)
     pedido.recalcular_total()
 
+    if not pedido.reserva_id:
+        return
     fatura = obter_fatura_principal_reserva(pedido.reserva)
     if not fatura:
         return

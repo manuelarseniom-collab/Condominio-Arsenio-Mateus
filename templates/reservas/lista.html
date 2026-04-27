@@ -38,6 +38,13 @@
                         <button type="submit">WhatsApp: Sim</button>
                     </form>
                     {% endif %}
+                    <form method="post" style="display:inline-block;">
+                        {% csrf_token %}
+                        <input type="hidden" name="reserva_id" value="{{ r.id }}">
+                        <input type="hidden" name="acao" value="gerar_fatura">
+                        <input type="hidden" name="metodo_pagamento" value="presencial_recepcao">
+                        <button type="submit">Gerar fatura da reserva</button>
+                    </form>
                 </td>
             </tr>
         {% empty %}

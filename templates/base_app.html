@@ -30,6 +30,9 @@
                 <a href="{% url 'clientes:lista' %}">Clientes</a>
                 <a href="{% url 'reservas:lista' %}">Reservas ativas</a>
                 <a href="{% url 'reservas:lista' %}">Reservas pendentes</a>
+                <a href="{% url 'restaurante:lista' %}">Dashboard Restaurante</a>
+                <a href="{% url 'restaurante:cozinha' %}">Cozinha / Preparação</a>
+                <a href="{% url 'restaurante:relatorios' %}">Relatórios Restaurante</a>
                 <a href="{% url 'faturacao:lista' %}">Faturação</a>
                 <a href="{% url 'faturacao:emitir' %}">Emitir fatura</a>
                 <form method="post" action="{% url 'usuarios:logout' %}">
@@ -40,6 +43,7 @@
                 <a href="{% url 'dashboard:home' %}">Painel administrativo</a>
                 <a href="{% url 'reservas:lista' %}">Reservas</a>
                 <a href="{% url 'clientes:lista' %}">Clientes</a>
+                <a href="{% url 'restaurante:lista' %}">Restaurante</a>
                 <a href="/admin/auth/user/">Trabalhadores</a>
                 <a href="{% url 'faturacao:lista' %}">Faturação</a>
                 <a href="{% url 'faturacao:emitir' %}">Emitir fatura</a>

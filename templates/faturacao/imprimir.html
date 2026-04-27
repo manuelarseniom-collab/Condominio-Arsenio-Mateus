@@ -20,7 +20,15 @@
     <hr>
     <h3>Fatura {{ fatura.numero_fatura }}</h3>
     <p><strong>Data:</strong> {{ fatura.data_emissao|date:"d/m/Y H:i" }}</p>
+    <p><strong>Tipo:</strong> {{ fatura.get_tipo_display }}</p>
     <p><strong>Cliente:</strong> {% if fatura.reserva_id %}{{ fatura.reserva.cliente.nome }}{% else %}{{ fatura.cliente.username }}{% endif %}</p>
+    {% if fatura.reserva_id %}
+    <p><strong>Nacionalidade:</strong> {{ fatura.reserva.cliente.nacionalidade|default:"-" }}</p>
+    <p><strong>Documento:</strong> {{ fatura.reserva.cliente.numero_documento_identificacao|default:"-" }}</p>
+    <p><strong>Reserva:</strong> #{{ fatura.reserva.id }} | <strong>Apartamento:</strong> {{ fatura.reserva.unidade.codigo }} ({{ fatura.reserva.unidade.tipo }})</p>
+    <p><strong>Check-in / Check-out:</strong> {{ fatura.reserva.data_inicio }} / {{ fatura.reserva.data_fim }} | <strong>Hóspedes:</strong> {{ fatura.reserva.numero_hospedes }}</p>
+    {% endif %}
+
     <p><strong>Telefone:</strong> {% if fatura.reserva_id %}{{ fatura.reserva.cliente.telefone }}{% else %}-{% endif %}</p>
     <p><strong>Email:</strong> {% if fatura.reserva_id %}{{ fatura.reserva.cliente.email }}{% else %}{{ fatura.cliente.email }}{% endif %}</p>
 
@@ -40,9 +48,15 @@
         </tbody>
     </table>
 
+    <p class="right"><strong>Subtotal:</strong> {{ fatura.subtotal }} Kz</p>
+    <p class="right"><strong>Desconto:</strong> {{ fatura.desconto }} Kz</p>
     <p class="right"><strong>Total:</strong> {{ fatura.total }} Kz</p>
+    <p class="right"><strong>Valor pago:</strong> {{ fatura.valor_pago }} Kz</p>
+    <p class="right"><strong>Valor pendente:</strong> {{ fatura.valor_pendente }} Kz</p>
     <p><strong>Método de pagamento:</strong> {{ fatura.metodo_pagamento|default:"Pendente" }}</p>
-    <p><strong>Status:</strong> {{ fatura.get_status_display }}</p>
-    <p><em>Pagamento realizado antecipadamente conforme política do condomínio.</em></p>
+    <p><strong>Estado pagamento:</strong> {{ fatura.get_estado_pagamento_display }}</p>
+    <p><strong>Status:</strong> {{ fatura.get_status_display }} | <strong>Emitido por:</strong> {{ fatura.emitido_por|default:"-" }}</p>
+    <p><strong>Observações:</strong> {{ fatura.observacoes|default:"-" }}</p>
+    <p><em>Pagamento prévio confirmado conforme política de reserva e serviços.</em></p>
 </body>
 </html>
