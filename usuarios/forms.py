@@ -23,10 +23,13 @@ class SecureAuthenticationForm(AuthenticationForm):
     )
 
     def clean(self):
-        username = self.cleaned_data.get("login_usuario")
-        password = self.cleaned_data.get("login_senha")
+        username = self.cleaned_data.get("login_usuario") or self.data.get("username")
+        password = self.cleaned_data.get("login_senha") or self.data.get("password")
 
         if username is not None and password:
+            # Keep compatibility with AuthenticationForm internals.
+            self.cleaned_data["username"] = username
+            self.cleaned_data["password"] = password
             self.user_cache = authenticate(
                 self.request,
                 username=username,
