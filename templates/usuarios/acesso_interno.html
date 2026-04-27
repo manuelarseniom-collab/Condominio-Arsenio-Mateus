@@ -5,18 +5,26 @@
 {% block content %}
 <section class="pub-section" style="max-width: 980px;">
     <h1>Acesso interno</h1>
-    <p style="color: var(--pub-muted);">Selecione o tipo de acesso interno ao portal.</p>
+    <p style="color: var(--pub-muted);">Selecione a área operacional que pretende aceder.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
         <article class="pub-card body">
-            <h3>Trabalhador</h3>
-            <p>Acesso destinado à receção e equipas operacionais autorizadas.</p>
-            <a class="btn-pub-primary" href="{% url 'usuarios:login_staff' %}">Entrar como trabalhador</a>
+            <h3>Reservas</h3>
+            <p>Acesso para receção, reservas, pagamentos, check-in, check-out e apoio ao cliente.</p>
+            <a class="btn-pub-primary" href="{% url 'usuarios:acesso_interno_reservas' %}">Entrar em Reservas</a>
         </article>
         <article class="pub-card body">
-            <h3>Administrador</h3>
-            <p>Acesso reservado à administração do sistema e do condomínio.</p>
-            <a class="btn-pub-outline" href="{% url 'usuarios:login_admin' %}">Entrar como administrador</a>
+            <h3>Serviços</h3>
+            <p>Acesso para gestão dos serviços de limpeza, lavandaria e outros serviços operacionais.</p>
+            <a class="btn-pub-outline" href="{% url 'usuarios:acesso_interno_servicos' %}">Entrar em Serviços</a>
+        </article>
+        <article class="pub-card body">
+            <h3>Restaurante</h3>
+            <p>Acesso para atendimento no restaurante, pedidos dos quartos, pedidos presenciais, QR Code, cozinha e faturação do restaurante.</p>
+            <a class="btn-pub-outline" href="{% url 'usuarios:acesso_interno_restaurante' %}">Entrar no Restaurante</a>
         </article>
     </div>
+    <p style="margin-top:0.9rem;color: var(--pub-muted); font-size:.95rem;">
+        Se ainda não estiver autenticado, será encaminhado para login interno antes de entrar no módulo.
+    </p>
 </section>
 {% endblock %}

@@ -1,7 +1,18 @@
 from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
 
-from .views import LoginAdminView, LoginClienteView, LoginStaffView, UsuarioLoginView, UsuarioLogoutView, acesso_interno, entrar
+from .views import (
+    LoginAdminView,
+    LoginClienteView,
+    LoginStaffView,
+    UsuarioLoginView,
+    UsuarioLogoutView,
+    acesso_interno,
+    acesso_interno_reservas,
+    acesso_interno_restaurante,
+    acesso_interno_servicos,
+    entrar,
+)
 
 
 app_name = "usuarios"
@@ -16,6 +27,9 @@ _password_reset_kwargs = {
 urlpatterns = [
     path("entrar/", entrar, name="entrar"),
     path("acesso-interno/", acesso_interno, name="acesso_interno"),
+    path("acesso-interno/reservas/", acesso_interno_reservas, name="acesso_interno_reservas"),
+    path("acesso-interno/servicos/", acesso_interno_servicos, name="acesso_interno_servicos"),
+    path("acesso-interno/restaurante/", acesso_interno_restaurante, name="acesso_interno_restaurante"),
     path("login/", UsuarioLoginView.as_view(), name="login"),
     path("login/cliente/", LoginClienteView.as_view(), name="login_cliente"),
     path("login/staff/", LoginStaffView.as_view(), name="login_staff"),

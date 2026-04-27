@@ -145,3 +145,61 @@ def entrar(request):
 @never_cache
 def acesso_interno(request):
     return render(request, "usuarios/acesso_interno.html")
+
+
+@never_cache
+def acesso_interno_reservas(request):
+    if not request.user.is_authenticated:
+        return redirect("usuarios:login_staff")
+    role = getattr(getattr(request.user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
+    if role in {
+        PerfilAcesso.RECEPCAO,
+        PerfilAcesso.ADMIN,
+        PerfilAcesso.ADMIN_CONDOMINIO,
+        PerfilAcesso.ADMIN_SISTEMA,
+    } or request.user.is_superuser:
+        return redirect("reservas:lista")
+    messages.error(request, "Sem permissão para o módulo de Reservas.")
+    return redirect("usuarios:acesso_interno")
+
+
+@never_cache
+def acesso_interno_servicos(request):
+    if not request.user.is_authenticated:
+        return redirect("usuarios:login_staff")
+    role = getattr(getattr(request.user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
+    if role in {
+        PerfilAcesso.STAFF_LIMPEZA,
+        PerfilAcesso.STAFF_LAVANDARIA,
+        PerfilAcesso.STAFF_MANUTENCAO,
+        PerfilAcesso.RECEPCAO,
+        PerfilAcesso.ADMIN,
+        PerfilAcesso.ADMIN_CONDOMINIO,
+        PerfilAcesso.ADMIN_SISTEMA,
+    } or request.user.is_superuser:
+        if role in {
+            PerfilAcesso.ADMIN,
+            PerfilAcesso.ADMIN_CONDOMINIO,
+            PerfilAcesso.ADMIN_SISTEMA,
+        }:
+            return redirect("operacoes:painel_admin")
+        return redirect("operacoes:painel_staff")
+    messages.error(request, "Sem permissão para o módulo de Serviços.")
+    return redirect("usuarios:acesso_interno")
+
+
+@never_cache
+def acesso_interno_restaurante(request):
+    if not request.user.is_authenticated:
+        return redirect("usuarios:login_staff")
+    role = getattr(getattr(request.user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
+    if role in {
+        PerfilAcesso.STAFF_RESTAURANTE,
+        PerfilAcesso.RECEPCAO,
+        PerfilAcesso.ADMIN,
+        PerfilAcesso.ADMIN_CONDOMINIO,
+        PerfilAcesso.ADMIN_SISTEMA,
+    } or request.user.is_superuser:
+        return redirect("restaurante:lista")
+    messages.error(request, "Sem permissão para o módulo de Restaurante.")
+    return redirect("usuarios:acesso_interno")
