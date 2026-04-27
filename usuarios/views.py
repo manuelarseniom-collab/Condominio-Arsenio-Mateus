@@ -1,5 +1,6 @@
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
@@ -8,6 +9,11 @@ from django.urls import reverse, reverse_lazy
 
 from usuarios.forms import SecureAuthenticationForm
 from usuarios.models import PerfilAcesso
+from reservas.models import Reserva
+from limpeza.models import PedidoLimpeza
+from lavandaria.models import PedidoLavandaria
+from restaurante.models import PedidoRestaurante, ProdutoRestaurante
+from faturacao.models import Pagamento
 
 
 @method_decorator(never_cache, name="dispatch")
@@ -147,59 +153,107 @@ def acesso_interno(request):
     return render(request, "usuarios/acesso_interno.html")
 
 
+def tem_permissao_modulo(user, modulo: str) -> bool:
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    role = getattr(getattr(user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
+    permissoes = {
+        "reservas": {
+            PerfilAcesso.RECEPCAO,
+            PerfilAcesso.ADMIN_CONDOMINIO,
+            PerfilAcesso.ADMIN_SISTEMA,
+            PerfilAcesso.ADMIN,
+        },
+        "servicos": {
+            PerfilAcesso.STAFF_LIMPEZA,
+            PerfilAcesso.STAFF_LAVANDARIA,
+            PerfilAcesso.STAFF_MANUTENCAO,
+            PerfilAcesso.RECEPCAO,
+            PerfilAcesso.ADMIN_CONDOMINIO,
+            PerfilAcesso.ADMIN_SISTEMA,
+            PerfilAcesso.ADMIN,
+        },
+        "restaurante": {
+            PerfilAcesso.STAFF_RESTAURANTE,
+            PerfilAcesso.RECEPCAO,
+            PerfilAcesso.ADMIN_CONDOMINIO,
+            PerfilAcesso.ADMIN_SISTEMA,
+            PerfilAcesso.ADMIN,
+        },
+    }
+    return role in permissoes.get(modulo, set())
+
+
+@never_cache
+@login_required
+def dashboard_reservas(request):
+    if not tem_permissao_modulo(request.user, "reservas"):
+        messages.warning(request, "Sem permissão para o módulo de Reservas.")
+        return redirect("usuarios:acesso_interno")
+    ctx = {
+        "reservas_pendentes": Reserva.objects.filter(
+            status__in=["pendente", "pre_reserva", "aguardando_pagamento", "pagamento_em_validacao", "aguardando_confirmacao"]
+        ).count(),
+        "reservas_confirmadas": Reserva.objects.filter(status="confirmada").count(),
+    }
+    # Simple timezone-safe stats
+    from django.utils import timezone
+    hoje_data = timezone.localdate()
+    ctx["checkins_hoje"] = Reserva.objects.filter(data_inicio=hoje_data).count()
+    ctx["checkouts_hoje"] = Reserva.objects.filter(data_fim=hoje_data).count()
+    ctx["pagamentos_pendentes"] = Pagamento.objects.filter(status="pendente").count()
+    return render(request, "interno/reservas/dashboard.html", ctx)
+
+
+@never_cache
+@login_required
+def dashboard_servicos(request):
+    if not tem_permissao_modulo(request.user, "servicos"):
+        messages.warning(request, "Sem permissão para o módulo de Serviços.")
+        return redirect("usuarios:acesso_interno")
+    ctx = {
+        "limpeza_total": PedidoLimpeza.objects.count(),
+        "lavandaria_total": PedidoLavandaria.objects.count(),
+        "pendentes": PedidoLimpeza.objects.filter(status="pendente").count()
+        + PedidoLavandaria.objects.filter(status="pendente").count(),
+        "em_execucao": PedidoLimpeza.objects.filter(status="em_curso").count()
+        + PedidoLavandaria.objects.filter(status="em_curso").count(),
+        "concluidos": PedidoLimpeza.objects.filter(status="concluido").count()
+        + PedidoLavandaria.objects.filter(status="concluido").count(),
+    }
+    return render(request, "interno/servicos/dashboard.html", ctx)
+
+
+@never_cache
+@login_required
+def dashboard_restaurante(request):
+    if not tem_permissao_modulo(request.user, "restaurante"):
+        messages.warning(request, "Sem permissão para o módulo de Restaurante.")
+        return redirect("usuarios:acesso_interno")
+    ctx = {
+        "pedidos_quarto": PedidoRestaurante.objects.filter(origem="quarto").count(),
+        "pedidos_presenciais": PedidoRestaurante.objects.filter(origem="presencial").count(),
+        "pedidos_qr": PedidoRestaurante.objects.filter(origem="mesa_qr").count(),
+        "em_preparacao": PedidoRestaurante.objects.filter(status="em_preparacao").count(),
+        "prontos": PedidoRestaurante.objects.filter(status="pronto").count(),
+        "entregues": PedidoRestaurante.objects.filter(status="entregue").count(),
+        "menu_total": ProdutoRestaurante.objects.filter(disponivel=True).count(),
+    }
+    return render(request, "interno/restaurante/dashboard.html", ctx)
+
+
 @never_cache
 def acesso_interno_reservas(request):
-    if not request.user.is_authenticated:
-        return redirect("usuarios:login_staff")
-    role = getattr(getattr(request.user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
-    if role in {
-        PerfilAcesso.RECEPCAO,
-        PerfilAcesso.ADMIN,
-        PerfilAcesso.ADMIN_CONDOMINIO,
-        PerfilAcesso.ADMIN_SISTEMA,
-    } or request.user.is_superuser:
-        return redirect("reservas:lista")
-    messages.error(request, "Sem permissão para o módulo de Reservas.")
-    return redirect("usuarios:acesso_interno")
+    return redirect("usuarios:dashboard_reservas")
 
 
 @never_cache
 def acesso_interno_servicos(request):
-    if not request.user.is_authenticated:
-        return redirect("usuarios:login_staff")
-    role = getattr(getattr(request.user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
-    if role in {
-        PerfilAcesso.STAFF_LIMPEZA,
-        PerfilAcesso.STAFF_LAVANDARIA,
-        PerfilAcesso.STAFF_MANUTENCAO,
-        PerfilAcesso.RECEPCAO,
-        PerfilAcesso.ADMIN,
-        PerfilAcesso.ADMIN_CONDOMINIO,
-        PerfilAcesso.ADMIN_SISTEMA,
-    } or request.user.is_superuser:
-        if role in {
-            PerfilAcesso.ADMIN,
-            PerfilAcesso.ADMIN_CONDOMINIO,
-            PerfilAcesso.ADMIN_SISTEMA,
-        }:
-            return redirect("operacoes:painel_admin")
-        return redirect("operacoes:painel_staff")
-    messages.error(request, "Sem permissão para o módulo de Serviços.")
-    return redirect("usuarios:acesso_interno")
+    return redirect("usuarios:dashboard_servicos")
 
 
 @never_cache
 def acesso_interno_restaurante(request):
-    if not request.user.is_authenticated:
-        return redirect("usuarios:login_staff")
-    role = getattr(getattr(request.user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
-    if role in {
-        PerfilAcesso.STAFF_RESTAURANTE,
-        PerfilAcesso.RECEPCAO,
-        PerfilAcesso.ADMIN,
-        PerfilAcesso.ADMIN_CONDOMINIO,
-        PerfilAcesso.ADMIN_SISTEMA,
-    } or request.user.is_superuser:
-        return redirect("restaurante:lista")
-    messages.error(request, "Sem permissão para o módulo de Restaurante.")
-    return redirect("usuarios:acesso_interno")
+    return redirect("usuarios:dashboard_restaurante")

@@ -233,3 +233,31 @@ class AcessoPorPerfilTests(TestCase):
         painel = self.client.get(reverse("dashboard:home"), follow=True)
         self.assertContains(painel, "Entrar")
 
+    def test_staff_restaurante_acede_dashboard_restaurante(self):
+        user = self._criar_utilizador("restok", PerfilAcesso.STAFF_RESTAURANTE)
+        self.client.force_login(user)
+        response = self.client.get(reverse("usuarios:dashboard_restaurante"), follow=True)
+        self.assertEqual(response.status_code, 200)
+
+    def test_staff_restaurante_sem_permissao_em_reservas(self):
+        user = self._criar_utilizador("restobloq", PerfilAcesso.STAFF_RESTAURANTE)
+        self.client.force_login(user)
+        response = self.client.get(reverse("usuarios:dashboard_reservas"), follow=True)
+        self.assertContains(response, "Sem permissão para o módulo de Reservas.")
+
+    def test_recepcao_acede_dashboards_modulares(self):
+        user = self._criar_utilizador("recepcaook", PerfilAcesso.RECEPCAO)
+        self.client.force_login(user)
+        reservas = self.client.get(reverse("usuarios:dashboard_reservas"))
+        servicos = self.client.get(reverse("usuarios:dashboard_servicos"))
+        restaurante = self.client.get(reverse("usuarios:dashboard_restaurante"))
+        self.assertEqual(reservas.status_code, 200)
+        self.assertEqual(servicos.status_code, 200)
+        self.assertEqual(restaurante.status_code, 200)
+
+    def test_cliente_bloqueado_em_modulos_internos(self):
+        user = self._criar_utilizador("clientebloqmod", PerfilAcesso.CLIENTE_CONFIRMADO)
+        self.client.force_login(user)
+        response = self.client.get(reverse("usuarios:dashboard_servicos"), follow=True)
+        self.assertContains(response, "Sem permissão para o módulo de Serviços.")
+

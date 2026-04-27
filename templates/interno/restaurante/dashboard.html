@@ -1,0 +1,20 @@
+{% extends "base_app.html" %}
+{% block title %}Dashboard Restaurante{% endblock %}
+{% block content %}
+<h1>Dashboard do Restaurante</h1>
+<section class="card">
+    <p><strong>Pedidos dos quartos:</strong> {{ pedidos_quarto }}</p>
+    <p><strong>Pedidos presenciais:</strong> {{ pedidos_presenciais }}</p>
+    <p><strong>Pedidos por QR Code:</strong> {{ pedidos_qr }}</p>
+    <p><strong>Pedidos em preparação:</strong> {{ em_preparacao }}</p>
+    <p><strong>Pedidos prontos:</strong> {{ prontos }}</p>
+    <p><strong>Pedidos entregues:</strong> {{ entregues }}</p>
+    <p><strong>Menu do restaurante (itens disponíveis):</strong> {{ menu_total }}</p>
+    <p>
+        <a class="btn-link" href="{% url 'restaurante:lista' %}">Operação de pedidos</a>
+        <a class="btn-link" href="{% url 'restaurante:cozinha' %}">Cozinha / Preparação</a>
+        <a class="btn-link secondary" href="{% url 'restaurante:relatorios' %}">Relatórios do restaurante</a>
+        <a class="btn-link secondary" href="{% url 'faturacao:lista' %}">Faturação do restaurante</a>
+    </p>
+</section>
+{% endblock %}

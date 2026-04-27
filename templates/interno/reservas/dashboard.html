@@ -1,0 +1,16 @@
+{% extends "base_app.html" %}
+{% block title %}Dashboard Reservas{% endblock %}
+{% block content %}
+<h1>Dashboard de Reservas</h1>
+<section class="card">
+    <p><strong>Reservas pendentes:</strong> {{ reservas_pendentes }}</p>
+    <p><strong>Reservas confirmadas:</strong> {{ reservas_confirmadas }}</p>
+    <p><strong>Check-ins do dia:</strong> {{ checkins_hoje }}</p>
+    <p><strong>Check-outs do dia:</strong> {{ checkouts_hoje }}</p>
+    <p><strong>Pagamentos pendentes:</strong> {{ pagamentos_pendentes }}</p>
+    <p>
+        <a class="btn-link" href="{% url 'reservas:lista' %}">Nova reserva assistida / Lista de reservas</a>
+        <a class="btn-link secondary" href="{% url 'relatorios:lista' %}">Relatório de reservas</a>
+    </p>
+</section>
+{% endblock %}

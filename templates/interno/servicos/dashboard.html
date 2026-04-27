@@ -1,0 +1,18 @@
+{% extends "base_app.html" %}
+{% block title %}Dashboard Serviços{% endblock %}
+{% block content %}
+<h1>Dashboard de Serviços</h1>
+<section class="card">
+    <p><strong>Pedidos de limpeza:</strong> {{ limpeza_total }}</p>
+    <p><strong>Pedidos de lavandaria:</strong> {{ lavandaria_total }}</p>
+    <p><strong>Pedidos pendentes:</strong> {{ pendentes }}</p>
+    <p><strong>Pedidos em execução:</strong> {{ em_execucao }}</p>
+    <p><strong>Pedidos concluídos:</strong> {{ concluidos }}</p>
+    <p>
+        <a class="btn-link" href="{% url 'limpeza:lista' %}">Limpeza</a>
+        <a class="btn-link" href="{% url 'lavandaria:lista' %}">Lavandaria</a>
+        <a class="btn-link" href="{% url 'operacoes:painel_staff' %}">Pedidos operacionais</a>
+        <a class="btn-link secondary" href="{% url 'faturacao:lista' %}">Faturação de serviços</a>
+    </p>
+</section>
+{% endblock %}
