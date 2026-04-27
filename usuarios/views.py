@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 
@@ -52,6 +53,7 @@ def redirecionar_pos_login_interno(user) -> str:
 
 
 @method_decorator(never_cache, name="dispatch")
+@method_decorator(ensure_csrf_cookie, name="dispatch")
 class UsuarioLoginView(LoginView):
     template_name = "usuarios/login.html"
     redirect_authenticated_user = False

@@ -325,3 +325,22 @@ class AcessoPorPerfilTests(TestCase):
         response = self.client.get(reverse("usuarios:dashboard_servicos"), follow=True)
         self.assertContains(response, "Sem permissão para o módulo de Serviços.")
 
+    def test_login_interno_com_csrf_valido_nao_retornada_403(self):
+        self._criar_utilizador("workercsrf", PerfilAcesso.RECEPCAO, password="Teste@123")
+        csrf_client = Client(enforce_csrf_checks=True)
+        login_url = reverse("usuarios:login_interno")
+        get_resp = csrf_client.get(login_url)
+        self.assertEqual(get_resp.status_code, 200)
+        token = csrf_client.cookies.get("csrftoken")
+        self.assertIsNotNone(token)
+        post_resp = csrf_client.post(
+            login_url,
+            {
+                "csrfmiddlewaretoken": token.value,
+                "login_usuario": "workercsrf",
+                "login_senha": "Teste@123",
+            },
+            follow=False,
+        )
+        self.assertNotEqual(post_resp.status_code, 403)
+
