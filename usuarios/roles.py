@@ -1,5 +1,19 @@
 from usuarios.models import PerfilAcesso
 
+ROLE_ALIASES = {
+    "trabalhador": "trabalhador",
+    "recepcionista": PerfilAcesso.RECEPCAO,
+    "trabalhador_reservas": PerfilAcesso.RECEPCAO,
+    "restaurante": PerfilAcesso.STAFF_RESTAURANTE,
+    "trabalhador_restaurante": PerfilAcesso.STAFF_RESTAURANTE,
+    "servicos": PerfilAcesso.STAFF_MANUTENCAO,
+    "trabalhador_servicos": PerfilAcesso.STAFF_MANUTENCAO,
+    "trabalhador_limpeza": PerfilAcesso.STAFF_LIMPEZA,
+    "trabalhador_lavandaria": PerfilAcesso.STAFF_LAVANDARIA,
+    "admin_condominio": PerfilAcesso.ADMIN_CONDOMINIO,
+    "admin_sistema": PerfilAcesso.ADMIN_SISTEMA,
+}
+
 
 ROLES_CLIENTE = {
     PerfilAcesso.CLIENTE_PENDENTE,
@@ -15,6 +29,7 @@ ROLES_STAFF = {
     PerfilAcesso.STAFF_LAVANDARIA,
     PerfilAcesso.STAFF_RESTAURANTE,
     PerfilAcesso.STAFF_MANUTENCAO,
+    "trabalhador",
 }
 
 ROLES_ADMIN = {
@@ -34,9 +49,12 @@ PERFIL_ADMINISTRADOR = "administrador"
 def get_user_role(user):
     if not user or not user.is_authenticated:
         return PerfilAcesso.VISITANTE
+    role = None
     if hasattr(user, "perfil_acesso"):
-        return user.perfil_acesso.role
-    return PerfilAcesso.VISITANTE
+        role = user.perfil_acesso.role
+    role = role or getattr(user, "perfil", None) or getattr(user, "role", None) or PerfilAcesso.VISITANTE
+    role = str(role).strip().lower()
+    return ROLE_ALIASES.get(role, role)
 
 
 def role_display_name(role: str) -> str:

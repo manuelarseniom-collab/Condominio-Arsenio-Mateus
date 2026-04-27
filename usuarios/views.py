@@ -140,6 +140,7 @@ class LoginStaffView(UsuarioLoginView):
         role = getattr(getattr(self.request.user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
         role = _normalizar_role(role)
         if role in (
+            "trabalhador",
             PerfilAcesso.RECEPCAO,
             PerfilAcesso.STAFF_LAVANDARIA,
             PerfilAcesso.STAFF_LIMPEZA,
@@ -236,7 +237,7 @@ def tem_permissao_modulo(user, modulo: str) -> bool:
 
 
 @never_cache
-@login_required
+@login_required(login_url="/login/interno/")
 def dashboard_reservas(request):
     if not tem_permissao_modulo(request.user, "reservas"):
         messages.warning(request, "Sem permissão para o módulo de Reservas.")
@@ -257,7 +258,7 @@ def dashboard_reservas(request):
 
 
 @never_cache
-@login_required
+@login_required(login_url="/login/interno/")
 def dashboard_servicos(request):
     if not tem_permissao_modulo(request.user, "servicos"):
         messages.warning(request, "Sem permissão para o módulo de Serviços.")
@@ -276,7 +277,7 @@ def dashboard_servicos(request):
 
 
 @never_cache
-@login_required
+@login_required(login_url="/login/interno/")
 def dashboard_restaurante(request):
     if not tem_permissao_modulo(request.user, "restaurante"):
         messages.warning(request, "Sem permissão para o módulo de Restaurante.")

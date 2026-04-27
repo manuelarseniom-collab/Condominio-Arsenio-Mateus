@@ -208,6 +208,16 @@ class AcessoPorPerfilTests(TestCase):
         self.assertEqual(servicos.status_code, 200)
         self.assertEqual(restaurante.status_code, 200)
 
+    def test_modulo_interno_redireciona_para_login_interno_quando_desautenticado(self):
+        response = self.client.get(reverse("usuarios:dashboard_restaurante"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login/interno/", response.url)
+
+    def test_visitante_em_solicitar_servico_nao_e_forcado_para_login(self):
+        response = self.client.get(reverse("site_publico:solicitar_servico"), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Este serviço só pode ser solicitado")
+
     def test_refresh_nao_altera_perfil(self):
         self._criar_utilizador("workerrefresh", PerfilAcesso.RECEPCAO, password="Teste@123")
         self.client.post(

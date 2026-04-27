@@ -24,9 +24,17 @@ def contexto_servicos_portal(request):
             ),
         }
 
-    reservas = cliente.reservas.filter(status__in=["ativa"]).order_by("data_inicio")
+    reservas = cliente.reservas.filter(status__in=["ativa", "confirmada"]).order_by("data_inicio")
     for r in reservas:
-        if r.data_inicio <= hoje <= r.data_fim:
+        if r.status == "ativa" and r.data_inicio <= hoje <= r.data_fim:
+            return {
+                "pode_solicitar_servicos": True,
+                "mensagem_servicos": None,
+                "reserva_servicos": r,
+            }
+        # Backward-compatible check-in gate for projects without explicit checkin flag:
+        # confirmed reservations become eligible on start date.
+        if r.status == "confirmada" and r.data_inicio <= hoje:
             return {
                 "pode_solicitar_servicos": True,
                 "mensagem_servicos": None,

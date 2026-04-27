@@ -24,7 +24,7 @@ def solicitar_servico(request):
         "Este serviço só pode ser solicitado após reserva confirmada e check-in realizado.",
     )
     if not request.user.is_authenticated:
-        return redirect("usuarios:login_cliente")
+        return redirect("site_publico:servicos")
     role = getattr(getattr(request.user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
     if role == PerfilAcesso.CLIENTE_CONFIRMADO:
         return redirect("portal_cliente:servicos")
