@@ -98,10 +98,8 @@ class LoginStaffView(UsuarioLoginView):
     }
     
     def form_valid(self, form):
-        response = super().form_valid(form)
+        super().form_valid(form)
         role = getattr(getattr(self.request.user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
-        if role == PerfilAcesso.STAFF_RESTAURANTE:
-            return redirect("restaurante:lista")
         if role in (
             PerfilAcesso.RECEPCAO,
             PerfilAcesso.STAFF_LAVANDARIA,
@@ -112,7 +110,7 @@ class LoginStaffView(UsuarioLoginView):
             PerfilAcesso.ADMIN_CONDOMINIO,
             PerfilAcesso.ADMIN_SISTEMA,
         ) or self.request.user.is_superuser:
-            return response
+            return redirect("usuarios:acesso_interno")
         messages.error(
             self.request,
             "Credenciais sem acesso à área de trabalhador.",
@@ -159,6 +157,13 @@ def tem_permissao_modulo(user, modulo: str) -> bool:
     if user.is_superuser:
         return True
     role = getattr(getattr(user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
+    perfil_normalizado = {
+        "recepcionista": PerfilAcesso.RECEPCAO,
+        "restaurante": PerfilAcesso.STAFF_RESTAURANTE,
+        "servicos": PerfilAcesso.STAFF_MANUTENCAO,
+        "admin_condominio": PerfilAcesso.ADMIN_CONDOMINIO,
+        "admin_sistema": PerfilAcesso.ADMIN_SISTEMA,
+    }.get(role, role)
     permissoes = {
         "reservas": {
             PerfilAcesso.RECEPCAO,
@@ -183,7 +188,7 @@ def tem_permissao_modulo(user, modulo: str) -> bool:
             PerfilAcesso.ADMIN,
         },
     }
-    return role in permissoes.get(modulo, set())
+    return perfil_normalizado in permissoes.get(modulo, set())
 
 
 @never_cache

@@ -37,6 +37,7 @@ urlpatterns = [
     path("acesso-interno/servicos/", acesso_interno_servicos, name="acesso_interno_servicos"),
     path("acesso-interno/restaurante/", acesso_interno_restaurante, name="acesso_interno_restaurante"),
     path("login/", UsuarioLoginView.as_view(), name="login"),
+    path("login/interno/", LoginStaffView.as_view(), name="login_interno"),
     path("login/cliente/", LoginClienteView.as_view(), name="login_cliente"),
     path("login/staff/", LoginStaffView.as_view(), name="login_staff"),
     path("login/admin/", LoginAdminView.as_view(), name="login_admin"),

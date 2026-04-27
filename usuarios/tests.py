@@ -127,8 +127,8 @@ class AcessoPorPerfilTests(TestCase):
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Perfil atual:")
-        self.assertContains(response, "Trabalhador")
+        self.assertContains(response, "Acesso interno")
+        self.assertContains(response, "Selecione a área operacional")
 
     def test_login_admin_exibe_perfil_administrador(self):
         self._criar_utilizador("adminperfil", PerfilAcesso.ADMIN, password="Teste@123")
@@ -171,8 +171,8 @@ class AcessoPorPerfilTests(TestCase):
             {"login_usuario": "workerswitch", "login_senha": "Teste@123"},
             follow=True,
         )
-        self.assertContains(response_worker, "Trabalhador")
-        self.assertNotContains(response_worker, "Perfil atual: Administrador")
+        self.assertContains(response_worker, "Acesso interno")
+        self.assertContains(response_worker, "Entrar em Reservas")
 
     def test_refresh_nao_altera_perfil(self):
         self._criar_utilizador("workerrefresh", PerfilAcesso.RECEPCAO, password="Teste@123")
