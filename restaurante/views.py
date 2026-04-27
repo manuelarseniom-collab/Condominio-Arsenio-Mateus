@@ -107,6 +107,7 @@ def lista(request):
             "stats": stats,
             "status_choices": PedidoRestaurante.STATUS,
             "origem_choices": PedidoRestaurante.ORIGEM,
+            "ultimo_pedido_id": PedidoRestaurante.objects.order_by("-id").values_list("id", flat=True).first() or 0,
         },
     )
 
