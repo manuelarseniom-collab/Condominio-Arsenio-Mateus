@@ -182,6 +182,22 @@ class AcessoPorPerfilTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Dashboard do Restaurante")
 
+    def test_login_interno_respeita_next_para_restaurante(self):
+        self._criar_utilizador("workerrestonext", PerfilAcesso.STAFF_RESTAURANTE, password="Teste@123")
+        response = self.client.post(
+            f"{reverse('usuarios:login_interno')}?next={reverse('usuarios:dashboard_restaurante')}",
+            {"login_usuario": "workerrestonext", "login_senha": "Teste@123", "next": reverse("usuarios:dashboard_restaurante")},
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Dashboard do Restaurante")
+
+    def test_acesso_interno_exibe_links_com_next(self):
+        response = self.client.get(reverse("usuarios:acesso_interno"))
+        self.assertContains(response, f"{reverse('usuarios:login_interno')}?next={reverse('usuarios:dashboard_reservas')}")
+        self.assertContains(response, f"{reverse('usuarios:login_interno')}?next={reverse('usuarios:dashboard_servicos')}")
+        self.assertContains(response, f"{reverse('usuarios:login_interno')}?next={reverse('usuarios:dashboard_restaurante')}")
+
     def test_refresh_nao_altera_perfil(self):
         self._criar_utilizador("workerrefresh", PerfilAcesso.RECEPCAO, password="Teste@123")
         self.client.post(

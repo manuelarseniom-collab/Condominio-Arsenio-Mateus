@@ -132,6 +132,9 @@ class LoginStaffView(UsuarioLoginView):
     
     def form_valid(self, form):
         super().form_valid(form)
+        next_url = self.get_redirect_url()
+        if next_url:
+            return redirect(next_url)
         role = getattr(getattr(self.request.user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
         role = _normalizar_role(role)
         if role in (

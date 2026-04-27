@@ -11,6 +11,7 @@
     {% endif %}
     <form method="post" autocomplete="off" autocapitalize="off" spellcheck="false" class="pub-card" style="padding:1.25rem;">
         {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next|default:'' }}">
         <label for="login_usuario">Utilizador</label>
         <input id="login_usuario" type="text" name="login_usuario" value="" autocomplete="new-password" autocapitalize="off" spellcheck="false" required style="width:100%;margin-bottom:0.75rem;padding:0.6rem;border-radius:8px;border:1px solid var(--pub-border);">
 
