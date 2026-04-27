@@ -26,6 +26,15 @@
                     <button type="submit">Sair</button>
                 </form>
                 {% elif perfil_atual == "trabalhador" %}
+                {% if current_role == "staff_restaurante" %}
+                <a href="{% url 'usuarios:dashboard_restaurante' %}">Dashboard Restaurante</a>
+                <a href="{% url 'restaurante:lista' %}">Novo pedido presencial</a>
+                <a href="{% url 'restaurante:lista' %}">Pedidos dos quartos</a>
+                <a href="{% url 'restaurante:cozinha' %}">Cozinha / Preparação</a>
+                <a href="{% url 'usuarios:dashboard_restaurante' %}">Menu do restaurante</a>
+                <a href="{% url 'restaurante:relatorios' %}">Relatórios Restaurante</a>
+                <a href="{% url 'faturacao:lista' %}">Pagamentos / Faturação</a>
+                {% else %}
                 <a href="{% url 'dashboard:home' %}">Painel interno</a>
                 <a href="{% url 'clientes:lista' %}">Clientes</a>
                 <a href="{% url 'reservas:lista' %}">Reservas ativas</a>
@@ -35,6 +44,7 @@
                 <a href="{% url 'restaurante:relatorios' %}">Relatórios Restaurante</a>
                 <a href="{% url 'faturacao:lista' %}">Faturação</a>
                 <a href="{% url 'faturacao:emitir' %}">Emitir fatura</a>
+                {% endif %}
                 <form method="post" action="{% url 'usuarios:logout' %}">
                     {% csrf_token %}
                     <button type="submit">Sair</button>

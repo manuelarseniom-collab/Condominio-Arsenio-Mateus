@@ -127,8 +127,7 @@ class AcessoPorPerfilTests(TestCase):
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Acesso interno")
-        self.assertContains(response, "Selecione a área operacional")
+        self.assertContains(response, "Dashboard de Reservas")
 
     def test_login_admin_exibe_perfil_administrador(self):
         self._criar_utilizador("adminperfil", PerfilAcesso.ADMIN, password="Teste@123")
@@ -171,8 +170,17 @@ class AcessoPorPerfilTests(TestCase):
             {"login_usuario": "workerswitch", "login_senha": "Teste@123"},
             follow=True,
         )
-        self.assertContains(response_worker, "Acesso interno")
-        self.assertContains(response_worker, "Entrar em Reservas")
+        self.assertContains(response_worker, "Dashboard de Reservas")
+
+    def test_login_staff_restaurante_redireciona_para_dashboard_restaurante(self):
+        self._criar_utilizador("workerresto", PerfilAcesso.STAFF_RESTAURANTE, password="Teste@123")
+        response = self.client.post(
+            reverse("usuarios:login_staff"),
+            {"login_usuario": "workerresto", "login_senha": "Teste@123"},
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Dashboard do Restaurante")
 
     def test_refresh_nao_altera_perfil(self):
         self._criar_utilizador("workerrefresh", PerfilAcesso.RECEPCAO, password="Teste@123")

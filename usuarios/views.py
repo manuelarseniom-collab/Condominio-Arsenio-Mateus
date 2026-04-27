@@ -16,6 +16,39 @@ from restaurante.models import PedidoRestaurante, ProdutoRestaurante
 from faturacao.models import Pagamento
 
 
+def _normalizar_role(role: str) -> str:
+    return {
+        "recepcionista": PerfilAcesso.RECEPCAO,
+        "trabalhador_reservas": PerfilAcesso.RECEPCAO,
+        "restaurante": PerfilAcesso.STAFF_RESTAURANTE,
+        "trabalhador_restaurante": PerfilAcesso.STAFF_RESTAURANTE,
+        "servicos": PerfilAcesso.STAFF_MANUTENCAO,
+        "trabalhador_servicos": PerfilAcesso.STAFF_MANUTENCAO,
+        "trabalhador_limpeza": PerfilAcesso.STAFF_LIMPEZA,
+        "trabalhador_lavandaria": PerfilAcesso.STAFF_LAVANDARIA,
+        "admin_condominio": PerfilAcesso.ADMIN_CONDOMINIO,
+        "admin_sistema": PerfilAcesso.ADMIN_SISTEMA,
+    }.get(role, role)
+
+
+def redirecionar_pos_login_interno(user) -> str:
+    if user.is_superuser:
+        return "usuarios:acesso_interno"
+
+    role = getattr(getattr(user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
+    role = _normalizar_role(role)
+
+    if role == PerfilAcesso.STAFF_RESTAURANTE:
+        return "usuarios:dashboard_restaurante"
+    if role in {PerfilAcesso.STAFF_MANUTENCAO, PerfilAcesso.STAFF_LIMPEZA, PerfilAcesso.STAFF_LAVANDARIA}:
+        return "usuarios:dashboard_servicos"
+    if role == PerfilAcesso.RECEPCAO:
+        return "usuarios:dashboard_reservas"
+    if role in {PerfilAcesso.ADMIN, PerfilAcesso.ADMIN_CONDOMINIO, PerfilAcesso.ADMIN_SISTEMA}:
+        return "usuarios:acesso_interno"
+    return "usuarios:acesso_interno"
+
+
 @method_decorator(never_cache, name="dispatch")
 class UsuarioLoginView(LoginView):
     template_name = "usuarios/login.html"
@@ -100,6 +133,7 @@ class LoginStaffView(UsuarioLoginView):
     def form_valid(self, form):
         super().form_valid(form)
         role = getattr(getattr(self.request.user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
+        role = _normalizar_role(role)
         if role in (
             PerfilAcesso.RECEPCAO,
             PerfilAcesso.STAFF_LAVANDARIA,
@@ -110,7 +144,10 @@ class LoginStaffView(UsuarioLoginView):
             PerfilAcesso.ADMIN_CONDOMINIO,
             PerfilAcesso.ADMIN_SISTEMA,
         ) or self.request.user.is_superuser:
-            return redirect("usuarios:acesso_interno")
+            destino = redirecionar_pos_login_interno(self.request.user)
+            if destino == "usuarios:acesso_interno" and role == PerfilAcesso.VISITANTE:
+                messages.warning(self.request, "Perfil interno não reconhecido. Verifique as permissões.")
+            return redirect(destino)
         messages.error(
             self.request,
             "Credenciais sem acesso à área de trabalhador.",
@@ -157,13 +194,7 @@ def tem_permissao_modulo(user, modulo: str) -> bool:
     if user.is_superuser:
         return True
     role = getattr(getattr(user, "perfil_acesso", None), "role", PerfilAcesso.VISITANTE)
-    perfil_normalizado = {
-        "recepcionista": PerfilAcesso.RECEPCAO,
-        "restaurante": PerfilAcesso.STAFF_RESTAURANTE,
-        "servicos": PerfilAcesso.STAFF_MANUTENCAO,
-        "admin_condominio": PerfilAcesso.ADMIN_CONDOMINIO,
-        "admin_sistema": PerfilAcesso.ADMIN_SISTEMA,
-    }.get(role, role)
+    perfil_normalizado = _normalizar_role(role)
     permissoes = {
         "reservas": {
             PerfilAcesso.RECEPCAO,
