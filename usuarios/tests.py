@@ -323,7 +323,7 @@ class AcessoPorPerfilTests(TestCase):
         user = self._criar_utilizador("clientebloqmod", PerfilAcesso.CLIENTE_CONFIRMADO)
         self.client.force_login(user)
         response = self.client.get(reverse("usuarios:dashboard_servicos"), follow=True)
-        self.assertContains(response, "Sem permissão para o módulo de Serviços.")
+        self.assertContains(response, "Sem permissão para o módulo de Servicos.")
 
     def test_login_interno_com_csrf_valido_nao_retornada_403(self):
         self._criar_utilizador("workercsrf", PerfilAcesso.RECEPCAO, password="Teste@123")

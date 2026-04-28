@@ -14,7 +14,15 @@ def apartamentos(request):
     return render(request, "site_publico/apartamentos.html")
 
 
+def disponibilidade(request):
+    return render(request, "site_publico/apartamentos.html")
+
+
 def servicos(request):
+    return render(request, "site_publico/servicos.html")
+
+
+def servicos_publicos(request):
     return render(request, "site_publico/servicos.html")
 
 
@@ -33,6 +41,14 @@ def solicitar_servico(request):
 
 def restaurante(request):
     return render(request, "site_publico/restaurante.html")
+
+
+def restaurante_publico(request):
+    return render(request, "site_publico/restaurante.html")
+
+
+def como_funciona(request):
+    return render(request, "site_publico/faq.html")
 
 
 def contactos(request):

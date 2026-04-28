@@ -3,6 +3,7 @@ from functools import wraps
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
+from django.urls import reverse
 
 from usuarios.perfil import get_perfil_atual
 from usuarios.roles import get_user_role
@@ -58,3 +59,22 @@ def administrador_required(view_func):
 
 def interno_required(view_func):
     return _perfil_required({"trabalhador", "administrador"}, "usuarios:acesso_interno")(view_func)
+
+
+def modulo_required(modulo):
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapped(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                login_url = f"{reverse('usuarios:login_interno')}?next={request.path}"
+                return redirect(login_url)
+            from usuarios.views import tem_permissao_modulo  # import local para evitar ciclo
+
+            if not tem_permissao_modulo(request.user, modulo):
+                messages.warning(request, f"Sem permissão para o módulo de {modulo.title()}.")
+                return redirect("usuarios:acesso_interno")
+            return view_func(request, *args, **kwargs)
+
+        return wrapped
+
+    return decorator

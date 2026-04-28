@@ -1,6 +1,5 @@
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
@@ -8,6 +7,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 
+from usuarios.authz import modulo_required
 from usuarios.forms import SecureAuthenticationForm
 from usuarios.models import PerfilAcesso
 from reservas.models import Reserva
@@ -239,11 +239,8 @@ def tem_permissao_modulo(user, modulo: str) -> bool:
 
 
 @never_cache
-@login_required(login_url="/login/interno/")
+@modulo_required("reservas")
 def dashboard_reservas(request):
-    if not tem_permissao_modulo(request.user, "reservas"):
-        messages.warning(request, "Sem permissão para o módulo de Reservas.")
-        return redirect("usuarios:acesso_interno")
     ctx = {
         "reservas_pendentes": Reserva.objects.filter(
             status__in=["pendente", "pre_reserva", "aguardando_pagamento", "pagamento_em_validacao", "aguardando_confirmacao"]
@@ -260,11 +257,8 @@ def dashboard_reservas(request):
 
 
 @never_cache
-@login_required(login_url="/login/interno/")
+@modulo_required("servicos")
 def dashboard_servicos(request):
-    if not tem_permissao_modulo(request.user, "servicos"):
-        messages.warning(request, "Sem permissão para o módulo de Serviços.")
-        return redirect("usuarios:acesso_interno")
     ctx = {
         "limpeza_total": PedidoLimpeza.objects.count(),
         "lavandaria_total": PedidoLavandaria.objects.count(),
@@ -279,48 +273,33 @@ def dashboard_servicos(request):
 
 
 @never_cache
-@login_required(login_url="/login/interno/")
+@modulo_required("restaurante")
 def dashboard_restaurante(request):
-    if not tem_permissao_modulo(request.user, "restaurante"):
-        messages.warning(request, "Sem permissão para o módulo de Restaurante.")
-        return redirect("usuarios:acesso_interno")
     # Plataforma operacional real do restaurante dentro da rota interna.
     return restaurante_views.lista(request)
 
 
 @never_cache
-@login_required(login_url="/login/interno/")
+@modulo_required("restaurante")
 def novo_pedido_restaurante(request):
-    if not tem_permissao_modulo(request.user, "restaurante"):
-        messages.warning(request, "Sem permissão para o módulo de Restaurante.")
-        return redirect("usuarios:acesso_interno")
     return restaurante_views.lista(request)
 
 
 @never_cache
-@login_required(login_url="/login/interno/")
+@modulo_required("restaurante")
 def pedidos_restaurante(request):
-    if not tem_permissao_modulo(request.user, "restaurante"):
-        messages.warning(request, "Sem permissão para o módulo de Restaurante.")
-        return redirect("usuarios:acesso_interno")
     return restaurante_views.lista(request)
 
 
 @never_cache
-@login_required(login_url="/login/interno/")
+@modulo_required("restaurante")
 def cozinha_restaurante(request):
-    if not tem_permissao_modulo(request.user, "restaurante"):
-        messages.warning(request, "Sem permissão para o módulo de Restaurante.")
-        return redirect("usuarios:acesso_interno")
     return restaurante_views.cozinha(request)
 
 
 @never_cache
-@login_required(login_url="/login/interno/")
+@modulo_required("restaurante")
 def menu_restaurante_admin(request):
-    if not tem_permissao_modulo(request.user, "restaurante"):
-        messages.warning(request, "Sem permissão para o módulo de Restaurante.")
-        return redirect("usuarios:acesso_interno")
     return restaurante_views.lista(request)
 
 

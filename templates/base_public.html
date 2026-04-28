@@ -13,12 +13,17 @@
         <div class="pub-logo">ARSÉNIO MATEUS</div>
         <nav class="pub-nav">
             {% if perfil_atual == "visitante_interessado" %}
-            <a href="{% url 'site_publico:home' %}">Início</a>
-            <a href="{% url 'site_publico:apartamentos' %}">Apartamentos</a>
-            <a href="{% url 'buscar_apartamentos' %}">Disponibilidade</a>
-            <a href="{% url 'site_publico:servicos' %}">Serviços</a>
-            <a href="{% url 'site_publico:restaurante' %}">Restaurante</a>
-            <a href="{% url 'site_publico:home' %}#como-funciona">Como funciona</a>
+            <div class="pub-menu-dropdown" data-pub-menu>
+                <button type="button" class="pub-menu-toggle" aria-expanded="false" aria-haspopup="true">Menu</button>
+                <div class="pub-menu-panel">
+                    <a href="{% url 'site_publico:apartamentos' %}">Apartamentos</a>
+                    <a href="{% url 'buscar_apartamentos' %}">Disponibilidade</a>
+                    <a href="{% url 'site_publico:servicos' %}">Serviços</a>
+                    <a href="{% url 'site_publico:restaurante' %}">Restaurante</a>
+                    <a href="{% url 'site_publico:solicitar_servico' %}">Solicitação de serviços</a>
+                </div>
+            </div>
+            <a href="{% url 'site_publico:como_funciona' %}">Como funciona</a>
             <a href="{% url 'site_publico:faq' %}">FAQ</a>
             <a href="{% url 'site_publico:depoimentos' %}">Depoimentos</a>
             <a href="{% url 'site_publico:contactos' %}">Contactos</a>
