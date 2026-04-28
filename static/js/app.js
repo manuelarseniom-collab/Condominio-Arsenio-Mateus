@@ -1,33 +1,51 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const menuRoot = document.querySelector("[data-pub-menu]");
-    if (!menuRoot) {
+    if (document.getElementById("mainMenuDropdown")) {
         return;
     }
+    const dropdowns = Array.from(document.querySelectorAll("[data-pub-menu]"));
+    if (!dropdowns.length) return;
 
-    const toggle = menuRoot.querySelector(".pub-menu-toggle");
-    if (!toggle) {
-        return;
-    }
-
-    const closeMenu = () => {
+    const closeDropdown = (menuRoot) => {
+        const toggle = menuRoot.querySelector(".pub-menu-toggle");
+        const panel = menuRoot.querySelector(".pub-menu-panel");
+        if (!toggle || !panel) return;
         menuRoot.classList.remove("open");
+        panel.hidden = true;
         toggle.setAttribute("aria-expanded", "false");
     };
 
-    toggle.addEventListener("click", () => {
-        const open = menuRoot.classList.toggle("open");
-        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    const openDropdown = (menuRoot) => {
+        const toggle = menuRoot.querySelector(".pub-menu-toggle");
+        const panel = menuRoot.querySelector(".pub-menu-panel");
+        if (!toggle || !panel) return;
+        menuRoot.classList.add("open");
+        panel.hidden = false;
+        toggle.setAttribute("aria-expanded", "true");
+    };
+
+    dropdowns.forEach((menuRoot) => {
+        const toggle = menuRoot.querySelector(".pub-menu-toggle");
+        const panel = menuRoot.querySelector(".pub-menu-panel");
+        if (!toggle || !panel) return;
+
+        panel.hidden = true;
+        toggle.setAttribute("aria-expanded", "false");
+
+        toggle.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const isOpen = menuRoot.classList.contains("open");
+            dropdowns.forEach(closeDropdown);
+            if (!isOpen) openDropdown(menuRoot);
+        });
     });
 
     document.addEventListener("click", (event) => {
-        if (!menuRoot.contains(event.target)) {
-            closeMenu();
-        }
+        dropdowns.forEach((menuRoot) => {
+            if (!menuRoot.contains(event.target)) closeDropdown(menuRoot);
+        });
     });
 
     document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-            closeMenu();
-        }
+        if (event.key === "Escape") dropdowns.forEach(closeDropdown);
     });
 });

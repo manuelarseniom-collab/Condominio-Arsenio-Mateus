@@ -13,9 +13,9 @@
         <div class="pub-logo">ARSÉNIO MATEUS</div>
         <nav class="pub-nav">
             {% if perfil_atual == "visitante_interessado" %}
-            <div class="pub-menu-dropdown" data-pub-menu>
-                <button type="button" class="pub-menu-toggle" aria-expanded="false" aria-haspopup="true">Menu</button>
-                <div class="pub-menu-panel">
+            <div class="nav-dropdown pub-menu-dropdown" id="mainMenuDropdown" data-pub-menu>
+                <button type="button" class="nav-menu-button pub-menu-toggle" id="menuButton" aria-expanded="false" aria-haspopup="true">Menu</button>
+                <div class="nav-dropdown-content pub-menu-panel" id="menuDropdown" hidden>
                     <a href="{% url 'site_publico:apartamentos' %}">Apartamentos</a>
                     <a href="{% url 'buscar_apartamentos' %}">Disponibilidade</a>
                     <a href="{% url 'site_publico:servicos' %}">Serviços</a>
@@ -99,5 +99,39 @@
         </div>
     </footer>
     <script src="{% static 'js/app.js' %}"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const dropdown = document.getElementById("mainMenuDropdown");
+        const button = document.getElementById("menuButton");
+        const panel = document.getElementById("menuDropdown");
+
+        if (!dropdown || !button || !panel) {
+            return;
+        }
+
+        const close = () => {
+            dropdown.classList.remove("open");
+            panel.hidden = true;
+            button.setAttribute("aria-expanded", "false");
+        };
+
+        button.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const shouldOpen = !dropdown.classList.contains("open");
+            close();
+            if (shouldOpen) {
+                dropdown.classList.add("open");
+                panel.hidden = false;
+                button.setAttribute("aria-expanded", "true");
+            }
+        });
+
+        document.addEventListener("click", close);
+        dropdown.addEventListener("click", function (event) {
+            event.stopPropagation();
+        });
+    });
+    </script>
 </body>
 </html>
