@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    if (document.getElementById("mainMenuDropdown")) {
+    if (document.getElementById("menu-toggle")) {
         return;
     }
     const dropdowns = Array.from(document.querySelectorAll("[data-pub-menu]"));
